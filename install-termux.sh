@@ -25,9 +25,9 @@ if ! command -v wget &> /dev/null; then
   pkg install -y wget 
 fi
 
-echo "Please enter a password for ssh connection:"
 ssh-keygen -A
-
+echo "Please enter a password for ssh connection:"
+passwd
 echo "Enabling termux-wake-lock && sshd"
 termux-wake-lock && sshd
 
