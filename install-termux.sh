@@ -72,7 +72,7 @@ cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock && sshd
 project_path=$(readlink -f "./$DIRECTORY")
-cd "$project_path" && source .venv/bin/activate && python3 app.py
+cd "$project_path" && source .venv/bin/activate && python3 app.py &
 EOF
 
 # Make the script executable
