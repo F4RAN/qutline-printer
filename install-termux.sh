@@ -66,7 +66,9 @@ pip install -r requirements.txt
 pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:8080 app:app &
 
+
 echo "Configure Boot Settings"
+cd ~
 BOOT_DIRECTORY="$HOME/.termux/boot"
 SCRIPT_FILE="$BOOT_DIRECTORY/start-apps"
 # Create the directory if it doesn't exist
@@ -77,6 +79,7 @@ if [ -f "$SCRIPT_FILE" ]; then
         > "$SCRIPT_FILE" # Clears the content of the file
     fi
 fi
+
 # Create the script file
 cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
@@ -87,7 +90,7 @@ EOF
 
 # Make the script executable
 chmod u+x "$SCRIPT_FILE"
-cd ~
+
 echo "Automation printer setup completed."
 echo "After sleep or restarting device you dont loose anything."
 echo "By F4RAN - Vitalize.dev 2023"
