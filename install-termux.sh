@@ -1,5 +1,9 @@
 cd ~
-kill -9 $(lsof -t -i :8080)
+if ! command -v lsof &> /dev/null; then
+  echo "lsof is not installed. Installing lsof ..."
+  pkg install -y lsof
+fi
+
 if ! command -v python3 &> /dev/null; then
   echo "Python 3 is not installed. Installing Python 3..."
   pkg install -y python
@@ -44,6 +48,9 @@ if [ -d "$DIRECTORY" ]; then
 else
     echo "Directory '$DIRECTORY' does not exist."
 fi
+
+# Kill process on port 8080
+lsof -t -i :8000 | xargs kill -9
 
 # Unzip the file
 echo "Unzipping the file..."
