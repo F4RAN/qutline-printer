@@ -1,6 +1,4 @@
 cd ~
-lsof -t -i :8080 | xargs kill -9
-lsof -t -i :8080
 if ! command -v lsof &> /dev/null; then
   echo "lsof is not installed. Installing lsof ..."
   pkg install -y lsof
@@ -52,8 +50,8 @@ else
 fi
 
 # Kill process on port 8080
-lsof -t -i :8000 | xargs kill -9
-
+lsof -t -i :8080 | xargs kill -9
+lsof -t -i :8080
 # Unzip the file
 echo "Unzipping the file..."
 unzip -q qutline-printer.zip
