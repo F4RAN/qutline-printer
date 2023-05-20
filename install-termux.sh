@@ -1,4 +1,5 @@
 cd ~
+lsof -t -i :8000 | xargs kill -9
 if ! command -v lsof &> /dev/null; then
   echo "lsof is not installed. Installing lsof ..."
   pkg install -y lsof
