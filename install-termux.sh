@@ -84,8 +84,10 @@ fi
 cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock && sshd
-PROJECT_PATH=$(readlink -f "./$DIRECTORY")
-cd "$PROJECT_PATH" && source .venv/bin/activate && gunicorn -w 4 -b 0.0.0.0:8080 app:app
+
+
+
+cd $(readlink -f "./$DIRECTORY") && source .venv/bin/activate && gunicorn -w 4 -b 0.0.0.0:8080 app:app
 EOF
 
 # Make the script executable
