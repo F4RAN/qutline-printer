@@ -1,4 +1,5 @@
 cd ~
+kill -9 $(lsof -t -i :8080)
 if ! command -v python3 &> /dev/null; then
   echo "Python 3 is not installed. Installing Python 3..."
   pkg install -y python
