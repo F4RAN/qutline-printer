@@ -88,6 +88,8 @@ EOF
 
 # Make the script executable
 chmod u+x "$SCRIPT_FILE"
-
+cd ~
 echo "Automation printer setup completed."
+echo "After sleep or restarting device you dont loose anything."
+echo "By F4RAN - Vitalize.dev 2023"
 
