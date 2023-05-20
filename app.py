@@ -21,7 +21,7 @@ def print_receipt():
             return {'success': False}
     except Exception as e:
         print(e)
-        return {'success': False, 'message': e}
+        return {'success': False}
 
 
 @app.route("/print/cut", methods=["POST"])
@@ -34,7 +34,7 @@ def cut_receipt():
             return {'success': False}
     except Exception as e:
         print(e)
-        return {'success': False, 'message': e}
+        return {'success': False, 'message': 'Printer Connection Failed with cut paper request'}
 
 
 @app.route("/check_printer", methods=["GET"])
@@ -51,7 +51,7 @@ def check_printer():
             return {'success': False}
     except Exception as e:
         print(e)
-        return {'success': False, 'message': e}
+        return {'success': False, 'message':'Printer Connection Failed with self test request'}
 
 
 @app.route("/find_printer", methods=["GET"])
