@@ -84,9 +84,6 @@ fi
 cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock && sshd
-
-
-
 cd $(readlink -f "./$DIRECTORY") && source .venv/bin/activate && gunicorn -w 4 -b 0.0.0.0:8080 app:app
 EOF
 
