@@ -50,8 +50,8 @@ else
 fi
 
 # Kill process on port 8080
-lsof -t -i :8080 | xargs kill -9
-lsof -t -i :8080
+lsof -t -i :5000 | xargs kill -9
+lsof -t -i :5000
 # Unzip the file
 echo "Unzipping the file..."
 unzip -q qutline-printer.zip
@@ -64,7 +64,7 @@ virtualenv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:8080 app:app &
+flask run &
 
 
 echo "Configure Boot Settings"
@@ -84,8 +84,7 @@ fi
 cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock && sshd
-cd $(readlink -f "./$DIRECTORY") && source .venv/bin/activate && gunicorn -w 4 -b 0.0.0.0:8080 app:app
-EOF
+cd $(readlink -f "./$DIRECTORY") && source .venv/bin/activate && flask run &
 
 # Make the script executable
 chmod u+x "$SCRIPT_FILE"
