@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
 
 
-@app.route("/print", methods=["POST"])
+@app.post("/print")
 def print_receipt():
     content = request.args.get("hex")
     if not content:
@@ -24,7 +24,7 @@ def print_receipt():
         return {'success': False}
 
 
-@app.route("/print/cut", methods=["POST"])
+@app.post("/print/cut")
 def cut_receipt():
     try:
         res = requests.get(f"http://192.168.1.100/?cutpaper")
@@ -37,7 +37,7 @@ def cut_receipt():
         return {'success': False, 'message': 'Printer Connection Failed with cut paper request'}
 
 
-@app.route("/check_printer", methods=["GET"])
+@app.get("/check_printer")
 def check_printer():
     printer_config = open('printer.json')
     config = json.loads(printer_config.read())
@@ -54,10 +54,10 @@ def check_printer():
         return {'success': False, 'message':'Printer Connection Failed with self test request'}
 
 
-@app.route("/find_printer", methods=["GET"])
+@app.get("/find_printer")
 def find_printer():
     # Scan Network for printer
-    pass
+    return "Sucess"
 
 
 # Run the Flask application
