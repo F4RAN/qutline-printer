@@ -44,7 +44,7 @@ def check_printer():
     ip = config['ip']
     port = config['port']
     try:
-        res = requests.get(ip + ":" + str(port) + '/?selftest')
+        res = requests.get("http://" + ip + ":" + str(port) + '/?selftest')
         if res.json() and res.json()['success']:
             return {'success': True}
         else:
