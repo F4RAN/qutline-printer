@@ -30,6 +30,15 @@ if ! command -v wget &> /dev/null; then
   echo "wget is not installed. Installing wget..."
   pkg install -y wget 
 fi
+package="libjpeg-turbo"
+if pkg list-installed | grep -q "^$package"; then
+    echo "$package is installed"
+else
+    echo "$package is not installed"
+    pkg install -y libjpeg-turbo
+fi
+
+
 
 ssh-keygen -A
 echo "Please enter a password for ssh connection:"
@@ -49,8 +58,8 @@ else
     echo "Directory '$DIRECTORY' does not exist."
 fi
 
-# Kill process on port 8080
-ps aux | grep app.py | awk '{print $2}' | xargs kill -9
+# Kill process app.py process
+ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9
 
 # Unzip the file
 echo "Unzipping the file..."
@@ -62,6 +71,18 @@ cd "$DIRECTORY"
 pip install virtualenv
 virtualenv .venv
 source .venv/bin/activate
+
+# Manual Pillow Setup
+pip install wheel
+architecture=$(uname -m)
+if [[ $architecture == "aarch64" ||  $architecture == "x86_64" ]]; then
+    LDFLAGS="-L/system/lib64/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
+elif [[ $architecture == "armv7l" || $architecture == "armv8l" ]]; then
+    LDFLAGS="-L/system/lib/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
+else
+    echo "Unsupported architecture: $architecture"
+    exit 1
+fi
 pip install -r requirements.txt
 python app.py &
 
