@@ -50,7 +50,7 @@ else
 fi
 
 # Kill process on port 8080
-ps aux | grep flask | awk '{print $2}' | xargs kill -9
+ps aux | grep app.py | awk '{print $2}' | xargs kill -9
 
 # Unzip the file
 echo "Unzipping the file..."
