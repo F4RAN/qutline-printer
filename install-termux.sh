@@ -58,8 +58,8 @@ else
     echo "Directory '$DIRECTORY' does not exist."
 fi
 
-# Kill process on port 8080
-ps aux | grep app.py | awk '{print $2}' | xargs kill -9
+# Kill process app.py process
+ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9
 
 # Unzip the file
 echo "Unzipping the file..."
