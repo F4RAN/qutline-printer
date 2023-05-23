@@ -75,9 +75,9 @@ source .venv/bin/activate
 # Manual Pillow Setup
 pip install wheel
 architecture=$(uname -m)
-if [[ $architecture == "aarch64" ]]; then
+if [[ $architecture == "aarch64" ||  $architecture == "x86_64" ]]; then
     LDFLAGS="-L/system/lib64/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
-elif [[ $architecture == "armv7l" ]]; then
+elif [[ $architecture == "armv7l" || $architecture == "armv8l" ]]; then
     LDFLAGS="-L/system/lib/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
 else
     echo "Unsupported architecture: $architecture"
