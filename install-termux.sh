@@ -30,6 +30,15 @@ if ! command -v wget &> /dev/null; then
   echo "wget is not installed. Installing wget..."
   pkg install -y wget 
 fi
+package="libjpeg-turbo"
+if pkg list-installed | grep -q "^$package"; then
+    echo "$package is installed"
+else
+    echo "$package is not installed"
+    pkg install -y libjpeg-turbo
+fi
+
+
 
 ssh-keygen -A
 echo "Please enter a password for ssh connection:"
