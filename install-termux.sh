@@ -71,6 +71,18 @@ cd "$DIRECTORY"
 pip install virtualenv
 virtualenv .venv
 source .venv/bin/activate
+
+# Manual Pillow Setup
+pip install wheel
+architecture=$(uname -m)
+if [[ $architecture == "aarch64" ]]; then
+    LDFLAGS="-L/system/lib64/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
+elif [[ $architecture == "armv7l" ]]; then
+    LDFLAGS="-L/system/lib/" CFLAGS="-I/data/data/com.termux/files/usr/include/" pip install Pillow
+else
+    echo "Unsupported architecture: $architecture"
+    exit 1
+fi
 pip install -r requirements.txt
 python app.py &
 
