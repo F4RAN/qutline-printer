@@ -1,9 +1,10 @@
 import base64
-import io
+from io import BytesIO
 from escpos.printer import Network
-
+from generator.receipt import generate_receipt
 def print_base64(base64_image):
-    encoded_data = base64_image.split(",")[1]
+
+    # encoded_data = base64_image.split(",")[1]
     try:# Connect to the printer
         printer = Network("192.168.1.100", port=9100)  # Replace with your printer's IP address and port
 
@@ -23,14 +24,19 @@ def print_base64(base64_image):
 
 
         # base64_image = "your_base64_image_here"  # Replace with your base64-encoded image
-        image_data = base64.b64decode(encoded_data)
+        # image_data = base64.b64decode(encoded_data)
 
-        output_file = "output_image.jpg"  # Replace with your desired output file name
+        # output_file = "output_image.jpg"  # Replace with your desired output file name
 
-        with open(output_file, "wb") as file:
-            file.write(image_data)
+        # with open(output_file, "wb") as file:
+        #     file.write(image_data)
         # # # Print the image
-        printer.image("./output_image.jpg")
+        receipt = generate_receipt()
+        # Save the image to a BytesIO object
+        image_buffer = BytesIO()
+        receipt.save(image_buffer, format="PNG")
+        image_buffer.seek(0)
+        printer.image(image_buffer)
 
         # Cut the paper
         printer.cut()
@@ -39,4 +45,4 @@ def print_base64(base64_image):
         print(e)
         return False
 
-# print_base64("a")
+print_base64("a")
