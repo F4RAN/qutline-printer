@@ -4,7 +4,7 @@ import requests
 from flask import Flask, request
 from flask_cors import CORS
 from printer import print_base64
-
+from time import sleep
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
 
@@ -23,6 +23,7 @@ def print_receipt():
     image_path = os.path.join("./", image_file.filename)
     image_file.save(image_path)
     image_file.flush()
+    sleep(5)
     try:
         res = print_base64(image_path)
         if res:
