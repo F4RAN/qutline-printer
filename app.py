@@ -1,5 +1,5 @@
 import json
-
+import os
 import requests
 from flask import Flask, request
 from flask_cors import CORS
@@ -11,18 +11,20 @@ CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.
 
 @app.route("/print", methods=["POST"])
 def print_receipt():
-    # if request.method == "OPTIONS":
-    #     # Return the appropriate CORS headers
-    #     response = make_response()
-    #     response.headers.add("Access-Control-Allow-Origin", "*")
-    #     response.headers.add("Access-Control-Allow-Methods", "GET, OPTIONS")
-    #     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-    #     return response
-    body = request.json
-    if not body['img']:
-        return {'success': False, 'message': "Content not found"}
+    if 'imageFile' not in request.files:
+        return jsonify({'success': False, 'message': 'No image file found'})
+
+    image_file = request.files['imageFile']
+
+    if image_file.filename == '':
+        return jsonify({'success': False, 'message': 'No image file selected'})
+
+    # Save the image file to a desired location
+    image_path = os.path.join("./", image_file.filename)
+    image_file.save(image_path)
+    image_file.flush()
     try:
-        res = print_base64(body['img'])
+        res = print_base64(image_path)
         if res:
             return {'success': True}
         else:
