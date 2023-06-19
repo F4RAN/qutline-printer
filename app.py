@@ -22,8 +22,7 @@ def print_receipt():
     # Save the image file to a desired location
     image_path = os.path.join("./", image_file.filename)
     image_file.save(image_path)
-    image_file.flush()
-    sleep(5)
+    image_file.close()
     try:
         res = print_base64(image_path)
         if res:
