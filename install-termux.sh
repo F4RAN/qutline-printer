@@ -4,6 +4,17 @@ if ! command -v lsof &> /dev/null; then
   pkg install -y lsof
 fi
 
+if ! command -v termux-usb &> /dev/null; then
+  echo "termux-api is not installed. Installing termux-api ..."
+  pkg install -y termux-api
+  android.permission.ACCESS_FINE_LOCATION
+fi
+
+if ! command -v nmap &> /dev/null; then
+  echo "nmap is not installed. Installing nmap ..."
+  pkg install -y nmap
+fi
+
 if ! command -v python3 &> /dev/null; then
   echo "Python 3 is not installed. Installing Python 3..."
   pkg install -y python

@@ -1,13 +1,56 @@
 import json
 import os
 import requests
-from flask import Flask, request
+from flask import Flask, request, jsonify, app
 from flask_cors import CORS
-from printer import print_base64
+from printer import print_base64, scan, is_online, connect_to_wifi
 from time import sleep
+import socket
+import pickledb
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
+db = pickledb.load('./data.db',False)
+meta = pickledb.load('./meta.db', False)
+wifi = pickledb.load('./wifi.db', False)
+@app.route("/status", methods=["GET"])
+def check_status():
+    res = []
+    data = db.getall()
+    for key in data:
+        role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys())  else "None"
+        typ = meta.get(key)['type'] if meta.get(key) and ('type' in meta.get(key).keys()) else "None"
+        res.append({f'{key}':{'ip':db.get(key),'is_online':is_online(db.get(key),'9100') if db.get(key) != 'None' else "None" ,'role':role,'type':typ}})
+    return jsonify({'wifi':{'SSID':wifi.get('SSID'), 'PASSWORD':wifi.get('PASSWORD')}, 'printers':res})
 
+@app.route("/set_wifi", methods=["POST"])
+def set_wifi():
+    req = request.json
+    if not req['SSID'] or not req['PASSWORD']:
+        return app.response_class("SSID or PASSWORD is not exists", 400)
+    wifi.set('SSID', req['SSID'])
+    wifi.set('PASSWORD', req['PASSWORD'])
+    wifi.dump()
+    return "Wi-fi credentials set successfully."
+
+@app.route("/connect_wifi/<mac>", methods=["POST"])
+def connect_wifi(mac):
+    if not db.get(mac):
+        return app.response_class("Mac address not found", 404)
+    connect_to_wifi(mac,wifi,db)
+    return "successfully."
+
+
+@app.route("/scan", methods=["POST"])
+def scan_printer():
+    res = []
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    rng = ".".join(s.getsockname()[0].split(".")[:3])
+    s.close()
+    data = scan(rng,db,meta)
+    for key in data:
+        res.append({f'{key}':db.get(key)})
+    return jsonify(res)
 
 @app.route("/print", methods=["POST"])
 def print_receipt():
