@@ -63,9 +63,9 @@ echo "Enabling termux-wake-lock && sshd"
 termux-wake-lock && sshd
 
 echo "Downloading the package..."
-#wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/refs/heads/main.zip
-git clone https://github.com/F4RAN/qutline-printer.git
-DIRECTORY="qutline-printer"
+wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/refs/heads/main.zip
+
+DIRECTORY="qutline-printer-main"
 if [ -d "$DIRECTORY" ]; then
     echo "Directory '$DIRECTORY' exists. Removing..."
     rm -r "$DIRECTORY"
