@@ -8,20 +8,26 @@ from time import sleep
 import socket
 import pickledb
 import sys, signal
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
-db = pickledb.load('./data.db',False)
+db = pickledb.load('./data.db', False)
 meta = pickledb.load('./meta.db', False)
 wifi = pickledb.load('./wifi.db', False)
+
+
 @app.route("/status", methods=["GET"])
 def check_status():
     res = []
     data = db.getall()
     for key in data:
-        role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys())  else "None"
+        role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys()) else "None"
         typ = meta.get(key)['type'] if meta.get(key) and ('type' in meta.get(key).keys()) else "None"
-        res.append({f'{key}':{'ip':db.get(key),'is_online':is_online(db.get(key),'9100') if db.get(key) != 'None' else "None" ,'role':role,'type':typ}})
-    return jsonify({'wifi':{'SSID':wifi.get('SSID'), 'PASSWORD':wifi.get('PASSWORD')}, 'printers':res})
+        res.append({f'{key}': {'ip': db.get(key),
+                               'is_online': is_online(db.get(key), '9100') if db.get(key) != 'None' else "None",
+                               'role': role, 'type': typ}})
+    return jsonify({'wifi': {'SSID': wifi.get('SSID'), 'PASSWORD': wifi.get('PASSWORD')}, 'printers': res})
+
 
 @app.route("/set_wifi", methods=["POST"])
 def set_wifi():
@@ -33,11 +39,12 @@ def set_wifi():
     wifi.dump()
     return "Wi-fi credentials set successfully."
 
+
 @app.route("/connect_wifi/<mac>", methods=["POST"])
 def connect_wifi(mac):
     if not db.get(mac):
         return app.response_class("Mac address not found", 404)
-    connect_to_wifi(mac,wifi,db)
+    connect_to_wifi(mac, wifi, db)
     return "successfully."
 
 
@@ -48,10 +55,11 @@ def scan_printer():
     s.connect(("8.8.8.8", 80))
     rng = ".".join(s.getsockname()[0].split(".")[:3])
     s.close()
-    data = scan(rng,db,meta)
+    data = scan(rng, db, meta)
     for key in data:
-        res.append({f'{key}':db.get(key)})
+        res.append({f'{key}': db.get(key)})
     return jsonify(res)
+
 
 @app.route("/print", methods=["POST"])
 def print_receipt():
@@ -83,7 +91,6 @@ def update_project():
     # Update/install packages
     # reload flask
 
-
     os.system('pip install --upgrade pip')
     os.system('pip install -r requirements.txt')
 
@@ -96,10 +103,13 @@ def update_project():
     #
     return jsonify({'message': 'Project updated successfully'})
 
+
 @app.route('/setup', methods=['GET'])
 def setup():
     with open('static/setup.html', 'r') as f:
         return f.read()
+
+
 # @app.route("/print/cut", methods=["POST"])
 # def cut_receipt():
 #     try:

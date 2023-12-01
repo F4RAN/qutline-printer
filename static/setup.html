@@ -45,7 +45,7 @@
       }).then(res => res.json())
         .then(data => {
           document.getElementById("status").innerHTML = JSON.stringify(data);
-        });;
+        });
     });
 
     // Scan
@@ -55,7 +55,7 @@
       }).then(res => res.json())
         .then(data => {
           document.getElementById("status").innerHTML = JSON.stringify(data);
-        })
+        });
     });
   </script>
 
