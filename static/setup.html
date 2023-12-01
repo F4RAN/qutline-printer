@@ -20,9 +20,9 @@
       fetch("http://127.0.0.1:8080/status")
         .then(res => res.json())
         .then(data => {
-          document.getElementById("status").innerHTML = JSON.stringify(data);
-        });
-    });
+          document.getElementById("status").innerHTML = JSON.stringify(data)
+        })
+    })
 
     // Set WiFi
     document.getElementById("set-wifi").addEventListener("click", () => {
@@ -33,10 +33,10 @@
           password: "secret123"
         }).then(res => res.json())
         .then(data => {
-          document.getElementById("status").innerHTML = JSON.stringify(data);
-        });
-      });
-    });
+          document.getElementById("status").innerHTML = JSON.stringify(data)
+        })
+      })
+    })
 
     // Connect
     document.getElementById("connect").addEventListener("click", () => {
@@ -44,9 +44,9 @@
         method: "POST"
       }).then(res => res.json())
         .then(data => {
-          document.getElementById("status").innerHTML = JSON.stringify(data);
-        });
-    });
+          document.getElementById("status").innerHTML = JSON.stringify(data)
+        })
+    })
 
     // Scan
     document.getElementById("scan").addEventListener("click", () => {
@@ -54,9 +54,9 @@
         method: "POST"
       }).then(res => res.json())
         .then(data => {
-          document.getElementById("status").innerHTML = JSON.stringify(data);
-        });
-    });
+          document.getElementById("status").innerHTML = JSON.stringify(data)
+        })
+    })
   </script>
 
 </body>
