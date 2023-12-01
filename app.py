@@ -7,6 +7,7 @@ from printer import print_base64, scan, is_online, connect_to_wifi
 from time import sleep
 import socket
 import pickledb
+import sys, signal
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
 db = pickledb.load('./data.db',False)
@@ -77,43 +78,63 @@ def print_receipt():
         return {'success': False}
 
 
-@app.route("/print/cut", methods=["POST"])
-def cut_receipt():
-    try:
-        res = requests.get(f"http://192.168.1.100/?cutpaper")
-        if res.json() and res.json()['success']:
-            return {'success': True}
-        else:
-            return {'success': False}
-
-    except Exception as e:
-        print(e)
-        return {'success': False, 'message': 'Printer Connection Failed with cut paper request'}
+@app.route('/update-project', methods=['POST'])
+def update_project():
+    # Update/install packages
+    # reload flask
 
 
-@app.route("/check_printer", methods=["GET"])
-def check_printer():
-    printer_config = open('printer.json')
-    config = json.loads(printer_config.read())
-    ip = config['ip']
-    port = config['port']
-    try:
-        res = requests.get("http://" + ip + ":" + str(port) + '/?selftest')
-        if res.json() and res.json()['success']:
-            return {'success': True}
-        else:
-            return {'success': False}
-    except Exception as e:
-        print(e)
-        return {'success': False, 'message':'Printer Connection Failed with self test request'}
+    os.system('pip install --upgrade pip')
+    os.system('pip install -r requirements.txt')
+
+    # Fetch latest code from GitHub
+    repo_url = 'https://github.com/F4RAN/qutline-printer.git'
+    os.system(f'git pull {repo_url}')
+
+    # Restart app
+    # os.system("lsof -i :53488 | awk '{print $2}' | tail -n 1 | xargs kill -9 && source ./.venv/bin/activate && python3 app.py &")
+    os.kill(os.getpid(), signal.SIGINT)
+    #
+    return jsonify({'message': 'Project updated successfully'})
 
 
-@app.route("/find_printer", methods=["GET"])
-def find_printer():
-    # Scan Network for printer
-    return "True"
+# @app.route("/print/cut", methods=["POST"])
+# def cut_receipt():
+#     try:
+#         res = requests.get(f"http://192.168.1.100/?cutpaper")
+#         if res.json() and res.json()['success']:
+#             return {'success': True}
+#         else:
+#             return {'success': False}
+#
+#     except Exception as e:
+#         print(e)
+#         return {'success': False, 'message': 'Printer Connection Failed with cut paper request'}
+#
+#
+# @app.route("/check_printer", methods=["GET"])
+# def check_printer():
+#     printer_config = open('printer.json')
+#     config = json.loads(printer_config.read())
+#     ip = config['ip']
+#     port = config['port']
+#     try:
+#         res = requests.get("http://" + ip + ":" + str(port) + '/?selftest')
+#         if res.json() and res.json()['success']:
+#             return {'success': True}
+#         else:
+#             return {'success': False}
+#     except Exception as e:
+#         print(e)
+#         return {'success': False, 'message':'Printer Connection Failed with self test request'}
+#
+#
+# @app.route("/find_printer", methods=["GET"])
+# def find_printer():
+#     # Scan Network for printer
+#     return "True"
 
 
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=53488)
