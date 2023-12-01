@@ -10,7 +10,7 @@ import pickledb
 import sys, signal
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "192.168.1.100:80"]}})
+CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:80"]}})
 db = pickledb.load('./data.db', False)
 meta = pickledb.load('./meta.db', False)
 wifi = pickledb.load('./wifi.db', False)
