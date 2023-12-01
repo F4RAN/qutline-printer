@@ -15,6 +15,11 @@ if ! command -v nmap &> /dev/null; then
   pkg install -y nmap
 fi
 
+if ! command -v git &> /dev/null; then
+  echo "git is not installed. Installing git ..."
+  pkg install -y git
+fi
+
 if ! command -v python3 &> /dev/null; then
   echo "Python 3 is not installed. Installing Python 3..."
   pkg install -y python
@@ -58,9 +63,9 @@ echo "Enabling termux-wake-lock && sshd"
 termux-wake-lock && sshd
 
 echo "Downloading the package..."
-wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/refs/heads/main.zip
-
-DIRECTORY="qutline-printer-main"
+#wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/refs/heads/main.zip
+git clone https://github.com/F4RAN/qutline-printer.git
+DIRECTORY="qutline-printer"
 if [ -d "$DIRECTORY" ]; then
     echo "Directory '$DIRECTORY' exists. Removing..."
     rm -r "$DIRECTORY"
