@@ -1,7 +1,7 @@
 import json
 import os
 import requests
-from flask import Flask, request, jsonify, app
+from flask import Flask, request, jsonify, app, render_template
 from flask_cors import CORS
 from printer import print_base64, scan, is_online, connect_to_wifi
 from time import sleep
@@ -98,8 +98,8 @@ def update_project():
 
 @app.route('/setup', methods=['GET'])
 def setup():
-    # Return html page
-    return render_template('setup.html')
+    with open('static/setup.html', 'r') as f:
+        return f.read()
 # @app.route("/print/cut", methods=["POST"])
 # def cut_receipt():
 #     try:
