@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WiFi Manager</title>
+</head>
+<body>
+
+  <h1>WiFi Manager</h1>
+
+  <button id="get-status">Get Status</button>
+  <button id="set-wifi">Set WiFi</button>
+  <button id="connect">Connect</button>
+  <button id="scan">Scan</button>
+
+  <div id="status"></div>
+
+  <script>
+    // Get status
+    document.getElementById("get-status").addEventListener("click", () => {
+      fetch("/status")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("status").innerHTML = JSON.stringify(data);
+        });
+    });
+
+    // Set WiFi
+    document.getElementById("set-wifi").addEventListener("click", () => {
+      fetch("/set_wifi", {
+        method: "POST",
+        body: JSON.stringify({
+          ssid: "mywifi",
+          password: "secret123"
+        })
+      });
+    });
+
+    // Connect
+    document.getElementById("connect").addEventListener("click", () => {
+      fetch("/connect_wifi/00:11:22:33:44:55", {
+        method: "POST"
+      });
+    });
+
+    // Scan
+    document.getElementById("scan").addEventListener("click", () => {
+      fetch("/scan", {
+        method: "POST"
+      });
+    });
+  </script>
+
+</body>
+</html>

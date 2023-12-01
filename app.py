@@ -92,12 +92,14 @@ def update_project():
     os.system(f'git pull {repo_url}')
 
     # Restart app
-    # os.system("lsof -i :53488 | awk '{print $2}' | tail -n 1 | xargs kill -9 && source ./.venv/bin/activate && python3 app.py &")
     os.kill(os.getpid(), signal.SIGINT)
     #
     return jsonify({'message': 'Project updated successfully'})
 
-
+@app.route('/setup', methods=['GET'])
+def setup():
+    # Return html page
+    return render_template('setup.html')
 # @app.route("/print/cut", methods=["POST"])
 # def cut_receipt():
 #     try:
@@ -137,4 +139,4 @@ def update_project():
 
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=53488)
+    app.run(host='0.0.0.0', port=8080)
