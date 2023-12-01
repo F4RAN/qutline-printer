@@ -17,7 +17,7 @@
   <script>
     // Get status
     document.getElementById("get-status").addEventListener("click", () => {
-      fetch("http://127.0.0.1:8080/status")
+      fetch("http://192.168.1.161:8080/status")
         .then(res => res.json())
         .then(data => {
           document.getElementById("status").innerHTML = JSON.stringify(data)
@@ -26,7 +26,7 @@
 
     // Set WiFi
     document.getElementById("set-wifi").addEventListener("click", () => {
-      fetch("http://127.0.0.1:8080/set_wifi", {
+      fetch("http://192.168.1.161:8080/set_wifi", {
         method: "POST",
         body: JSON.stringify({
           ssid: "mywifi",
@@ -40,7 +40,7 @@
 
     // Connect
     document.getElementById("connect").addEventListener("click", () => {
-      fetch("http://127.0.0.1:8080/connect_wifi/0C:7F:ED:C0:E0:4B", {
+      fetch("http://192.168.1.161:8080/connect_wifi/0C:7F:ED:C0:E0:4B", {
         method: "POST"
       }).then(res => res.json())
         .then(data => {
@@ -50,7 +50,7 @@
 
     // Scan
     document.getElementById("scan").addEventListener("click", () => {
-      fetch("http://127.0.0.1:8080/scan", {
+      fetch("http://192.168.1.161:8080/scan", {
         method: "POST"
       }).then(res => res.json())
         .then(data => {
