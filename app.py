@@ -2,9 +2,10 @@ import multiprocessing
 import os
 import subprocess
 from time import sleep
-
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
+
+from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi
 import socket
 import pickledb
@@ -52,10 +53,8 @@ def connect_wifi(mac):
 @app.route("/scan", methods=["POST"])
 def scan_printer():
     res = []
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    rng = ".".join(s.getsockname()[0].split(".")[:3])
-    s.close()
+    private_ip = get_private_ip()
+    rng = ".".join(private_ip.split(".")[:3])
     data = scan(rng, db, meta)
     for key in data:
         res.append({f'{key}': db.get(key)})
