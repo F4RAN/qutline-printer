@@ -22,10 +22,10 @@ def print_base64(image_path):
         return False
 
 
-founded_ips = []
 
 
 def scan(rng, db, meta):
+    founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
     # Read and parse nmap output
