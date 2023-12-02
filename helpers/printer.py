@@ -97,8 +97,8 @@ def scan(rng, db, meta):
 
             pass
     data = db.getall()
-    print(data)
     for key in data:
+        print(db.get(key), founded_ips)
         if db.get(key) not in founded_ips:
             print(db.get(key),"here in set none")
             db.set(key, "None")
