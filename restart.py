@@ -13,3 +13,5 @@ def restart_server():
             break
         except Exception as e:
             print(e)
+
+restart_server()
