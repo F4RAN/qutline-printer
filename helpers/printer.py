@@ -31,6 +31,7 @@ def scan(rng, db, meta):
     # Read and parse nmap output
     for line in proc.stdout:
         line = line.decode('utf-8')
+        print(line)
         ip_pattern = r'Host:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
         match = re.search(ip_pattern, line)
