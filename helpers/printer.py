@@ -25,11 +25,12 @@ founded_ips = []
 
 
 def scan(rng, db, meta):
-    nmap_args = f'nmap -p 9100 --open {rng}.* -M200  -oG -'
+    nmap_args = f'nmap -p 9100 --open {rng}.* -M200 -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
     # Read and parse nmap output
     for line in proc.stdout:
         line = line.decode('utf-8')
+        print(line)
         ip_pattern = r'Host:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
         match = re.search(ip_pattern, line)
