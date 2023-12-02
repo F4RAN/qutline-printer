@@ -1,4 +1,5 @@
 import base64
+import errno
 from io import BytesIO
 from escpos.printer import Network
 from PIL import Image
@@ -48,7 +49,7 @@ def scan(rng, db, meta):
             'Authorization': 'Basic YWRtaW46YWRtaW4='
         }
         try:
-            print(ip)
+            print(ip, founded_ips)
             res = requests.get("http://" + ip + '/status_en.html', headers=headers)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
             db.set(mac, ip)
