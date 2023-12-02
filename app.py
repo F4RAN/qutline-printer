@@ -114,6 +114,7 @@ def update_project():
 
 def restart_server(main_pid):
     sleep(2)
+    subprocess.Popen(["ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9"])
     os.kill(main_pid, signal.SIGINT)
     while True:
         print('Trying to run again')

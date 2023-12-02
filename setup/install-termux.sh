@@ -65,7 +65,8 @@ termux-wake-lock && sshd
 echo "Downloading the package..."
 wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/refs/heads/main.zip
 
-DIRECTORY="qutline-printer-main"
+#DIRECTORY="qutline-printer-main"
+DIRECTORY="qutline-printer"
 if [ -d "$DIRECTORY" ]; then
     echo "Directory '$DIRECTORY' exists. Removing..."
     rm -r "$DIRECTORY"
@@ -78,14 +79,14 @@ fi
 ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9
 
 # Unzip the file
-echo "Unzipping the file..."
-unzip -q qutline-printer.zip
-rm qutline-printer.zip
+#echo "Unzipping the file..."
+#unzip -q qutline-printer.zip
+#rm qutline-printer.zip
 
 echo "Install and executing printer package"
-cd "$DIRECTORY"
-git init .
-git remote add origin main https://github.com/F4RAN/qutline-printer.git
+git clone https://github.com/F4RAN/qutline-printer.git && cd "$DIRECTORY"
+#git init .
+#git remote add origin main https://github.com/F4RAN/qutline-printer.git
 pip install virtualenv
 virtualenv .venv
 source .venv/bin/activate
