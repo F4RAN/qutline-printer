@@ -95,9 +95,9 @@ def update_project():
     # os.system('pip install -r requirements.txt')
     #
     # # Fetch latest code from GitHub
-    # repo_url = 'https://github.com/F4RAN/qutline-printer.git'
-    # os.system(f'git pull {repo_url}')
-
+    repo_url = 'https://github.com/F4RAN/qutline-printer.git'
+    os.system(f'git pull {repo_url}')
+    sleep(5)
     # update termux
     timer = 0
     sb = subprocess.Popen(['./setup/update.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
