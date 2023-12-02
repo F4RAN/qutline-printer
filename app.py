@@ -102,7 +102,7 @@ def update_project():
     timer = 0
     sb = subprocess.Popen(['./setup/update.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while sb.poll() is None:
-        print(str(sb.stdout.readline().decode('utf-8')))
+        print(str(sb.stdout.readline()))
         sleep(1)
         timer += 1
         if timer > 600:
