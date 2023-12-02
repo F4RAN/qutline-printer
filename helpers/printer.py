@@ -25,13 +25,11 @@ founded_ips = []
 
 
 def scan(rng, db, meta):
-    print('rng is:', rng)
-    nmap_args = f'nmap -p 9100 --open {rng}.* -T5 -M200  -oG -'
+    nmap_args = f'nmap -p 9100 --open {rng}.* -M200  -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
     # Read and parse nmap output
     for line in proc.stdout:
         line = line.decode('utf-8')
-        print(line)
         ip_pattern = r'Host:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
         match = re.search(ip_pattern, line)
@@ -98,9 +96,7 @@ def scan(rng, db, meta):
             pass
     data = db.getall()
     for key in data:
-        print(db.get(key), founded_ips)
         if db.get(key) not in founded_ips:
-            print(db.get(key),"here in set none")
             db.set(key, "None")
             db.dump()
     return data
