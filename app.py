@@ -108,22 +108,11 @@ def update_project():
         if timer > 600:
             return jsonify({'message': 'Update failed'})
 
-    multiprocessing.Process(target=restart_server, args=(os.getpid(),)).start()
+    os.system('python3 restart.py')
     return jsonify({'message': 'Server restarting'})
 
 
-def restart_server(main_pid):
-    sleep(2)
-    os.system("ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9")
-    os.kill(main_pid, signal.SIGINT)
-    while True:
-        print('Trying to run again')
-        sleep(5)
-        try:
-            os.system('python app.py')
-            break
-        except Exception as e:
-            print(e)
+
 
 
 @app.route('/setup', methods=['GET'])
