@@ -1,4 +1,8 @@
+import multiprocessing
 import os
+import subprocess
+from time import sleep
+
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi
@@ -8,9 +12,9 @@ import signal
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:*"]}})
-db = pickledb.load('./data.db', False)
-meta = pickledb.load('./meta.db', False)
-wifi = pickledb.load('./wifi.db', False)
+db = pickledb.load('./dbs/data.db', False)
+meta = pickledb.load('./dbs/meta.db', False)
+wifi = pickledb.load('./dbs/wifi.db', False)
 
 
 @app.route("/status", methods=["GET"])
@@ -85,20 +89,40 @@ def print_receipt():
 
 @app.route('/update-project', methods=['POST'])
 def update_project():
-    # Update/install packages
-    # reload flask
 
-    os.system('pip install --upgrade pip')
-    os.system('pip install -r requirements.txt')
-
-    # Fetch latest code from GitHub
-    repo_url = 'https://github.com/F4RAN/qutline-printer.git'
-    os.system(f'git pull {repo_url}')
-
-    # Restart app
-    os.kill(os.getpid(), signal.SIGINT)
+    # update project
+    # os.system('pip install --upgrade pip')
+    # os.system('pip install -r requirements.txt')
     #
-    return jsonify({'message': 'Project updated successfully'})
+    # # Fetch latest code from GitHub
+    # repo_url = 'https://github.com/F4RAN/qutline-printer.git'
+    # os.system(f'git pull {repo_url}')
+
+    # update termux
+    timer = 0
+    sb = subprocess.Popen(['./setup/update.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while sb.poll() is None:
+        print(sb.stdout.readline())
+        sleep(1)
+        timer += 1
+        if timer > 600:
+            return jsonify({'message': 'Update failed'})
+
+    multiprocessing.Process(target=restart_server, args=(os.getpid(),)).start()
+    return jsonify({'message': 'Server restarting'})
+
+
+def restart_server(main_pid):
+    sleep(2)
+    os.kill(main_pid, signal.SIGINT)
+    while True:
+        print('Trying to run again')
+        sleep(5)
+        try:
+            os.system('python app.py')
+            break
+        except Exception as e:
+            print(e)
 
 
 @app.route('/setup', methods=['GET'])
@@ -107,43 +131,6 @@ def setup():
         return f.read()
 
 
-# @app.route("/print/cut", methods=["POST"])
-# def cut_receipt():
-#     try:
-#         res = requests.get(f"http://192.168.1.100/?cutpaper")
-#         if res.json() and res.json()['success']:
-#             return {'success': True}
-#         else:
-#             return {'success': False}
-#
-#     except Exception as e:
-#         print(e)
-#         return {'success': False, 'message': 'Printer Connection Failed with cut paper request'}
-#
-#
-# @app.route("/check_printer", methods=["GET"])
-# def check_printer():
-#     printer_config = open('printer.json')
-#     config = json.loads(printer_config.read())
-#     ip = config['ip']
-#     port = config['port']
-#     try:
-#         res = requests.get("http://" + ip + ":" + str(port) + '/?selftest')
-#         if res.json() and res.json()['success']:
-#             return {'success': True}
-#         else:
-#             return {'success': False}
-#     except Exception as e:
-#         print(e)
-#         return {'success': False, 'message':'Printer Connection Failed with self test request'}
-#
-#
-# @app.route("/find_printer", methods=["GET"])
-# def find_printer():
-#     # Scan Network for printer
-#     return "True"
-
-
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=12345)
