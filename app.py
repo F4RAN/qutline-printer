@@ -124,7 +124,7 @@ def restart_server(main_pid):
         print("Command executed successfully.")
     else:
         print("Command failed.")
-    os.kill(main_pid, signal.SIGINT)
+    # os.kill(main_pid, signal.SIGINT)
     while True:
         print('Trying to run again')
         sleep(5)
