@@ -114,7 +114,16 @@ def update_project():
 
 def restart_server(main_pid):
     sleep(2)
-    subprocess.Popen(["ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs kill -9"])
+    command = "pkill -f 'app.py'"
+
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+
+    # Optionally, you can check the return code to see if the command was successful
+    if process.returncode == 0:
+        print("Command executed successfully.")
+    else:
+        print("Command failed.")
     os.kill(main_pid, signal.SIGINT)
     while True:
         print('Trying to run again')
