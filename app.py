@@ -1,13 +1,10 @@
-import json
 import os
-import requests
-from flask import Flask, request, jsonify, app, render_template
+from flask import Flask, request, jsonify, app
 from flask_cors import CORS
-from printer import print_base64, scan, is_online, connect_to_wifi
-from time import sleep
+from helpers.printer import print_base64, scan, is_online, connect_to_wifi
 import socket
 import pickledb
-import sys, signal
+import signal
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:*"]}})

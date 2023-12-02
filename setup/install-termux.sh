@@ -85,7 +85,7 @@ rm qutline-printer.zip
 echo "Install and executing printer package"
 cd "$DIRECTORY"
 git init .
-git remote add origin https://github.com/F4RAN/qutline-printer.git
+git remote add origin main https://github.com/F4RAN/qutline-printer.git
 pip install virtualenv
 virtualenv .venv
 source .venv/bin/activate
