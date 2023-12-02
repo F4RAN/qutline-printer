@@ -1,12 +1,11 @@
-import base64
 import errno
-from io import BytesIO
 from escpos.printer import Network
-from PIL import Image
 import subprocess
 import re
 import requests
 import socket
+
+tout = 20
 
 
 def print_base64(image_path):
@@ -20,8 +19,6 @@ def print_base64(image_path):
     except Exception as e:
         print(e)
         return False
-
-
 
 
 def scan(rng, db, meta):
@@ -50,7 +47,7 @@ def scan(rng, db, meta):
         }
         try:
             print(ip, founded_ips)
-            res = requests.get("http://" + ip + '/status_en.html', headers=headers)
+            res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
             db.set(mac, ip)
             attr = meta.get(mac) if meta.get(mac) else {}
@@ -128,8 +125,9 @@ def connect_to_wifi(mac, wifi, db):
     password = wifi.get("PASSWORD")
     payload = f'sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=DHCP'
     try:
-        res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload)
-        res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART')
+        res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
+        res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
+                             timeout=tout)
 
     except Exception as e:
         print(e)
