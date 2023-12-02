@@ -108,7 +108,7 @@ def update_project():
         if timer > 600:
             return jsonify({'message': 'Update failed'})
 
-    os.system('python3 restart.py')
+    subprocess.Popen(["python3", "restart.py"])
     return jsonify({'message': 'Server restarting'})
 
 
