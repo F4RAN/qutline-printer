@@ -42,6 +42,18 @@ def set_wifi():
     return "Wi-fi credentials set successfully."
 
 
+@app.route("/get_wifi", methods=["GET"])
+def set_wifi():
+    # Check wifi name in termux
+    ssid = ""
+    try:
+        ssid = subprocess.check_output(['termux-wifi-connectioninfo']).decode('utf-8').split('"ssid": "')[1].split('"')[0]
+    except:
+        pass
+
+    return jsonify({'ssid': ssid})
+
+
 @app.route("/connect_wifi/<mac>", methods=["POST"])
 def connect_wifi(mac):
     if not db.get(mac):
@@ -88,7 +100,6 @@ def print_receipt():
 
 @app.route('/update-project', methods=['POST'])
 def update_project():
-
     # update project
     # os.system('pip install --upgrade pip')
     # os.system('pip install -r requirements.txt')
@@ -109,9 +120,6 @@ def update_project():
 
     subprocess.Popen(["python3", "restart.py"])
     return jsonify({'message': 'Server restarting'})
-
-
-
 
 
 @app.route('/setup', methods=['GET'])
