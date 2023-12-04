@@ -220,10 +220,17 @@
         fetch("http://127.0.0.1:8080/connect_wifi/" + this.printerMac, {
           method: "POST"
         })
-          .then(res => res.json())
+          .then(res => res)
           .then(data => {
-            document.getElementById("status").innerHTML = JSON.stringify(data);
-            this.loading = false; // Hide loading overlay
+            if (data.status == 200) {
+              this.loading = false; // Hide loading overlay
+              toast.info(`Printer Connected to ${ssid} Successfully.`)
+            }
+            else {
+              this.loading = false; // Hide loading overlay on error
+              console.error('Error setting WiFi');
+              toast.error("Error setting WiFi, Bad Request")
+            }
           })
           .catch(error => {
             this.loading = false; // Hide loading overlay on error
