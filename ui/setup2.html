@@ -199,7 +199,7 @@
 
 
 <script type="module">
-    import { toast } from 'https://cdn.jsdelivr.net/npm/vue3-toastify@0.1.13/+esm';
+  import { toast } from 'https://cdn.jsdelivr.net/npm/vue3-toastify@0.1.13/+esm';
   const { createApp } = Vue;
 
   createApp({
@@ -222,8 +222,7 @@
           .then(res => res.json())
           .then(data => {
             if(this.approve){
-              var pathArray = window.location.pathname.split('/');
-              let store = pathArray[2]
+              let store = window.location.search.split('=')[1]
               window.location.href = `http://dev.vitalize.dev/store/${store}/settings`
             }
             if(!this.approve && data.ssid != this.ssid){
