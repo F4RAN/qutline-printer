@@ -116,7 +116,7 @@ def update_project():
 
 @app.route('/setup', methods=['GET'])
 def setup():
-    with open('static/setup.html', 'r') as f:
+    with open('ui/setup2.html', 'r') as f:
         return f.read()
 
 

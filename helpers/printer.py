@@ -40,13 +40,13 @@ def scan(rng, db, meta):
 
     proc.wait()  # Wait for subprocess to exit
 
-    for ip in founded_ips:
+    for ip in founded_ips[0:10]:
         headers = {
             # 'Authorization': 'Basic admin:admin'
             'Authorization': 'Basic YWRtaW46YWRtaW4='
         }
         try:
-            print(ip, founded_ips)
+            print("Checking", ip)
             res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
             db.set(mac, ip)
@@ -70,24 +70,27 @@ def scan(rng, db, meta):
                 if not data:
                     break
                 html += data
-            response.shutdown(socket.SHUT_RD)
-            response.close()
-            mac_pattern = r'..-..-..-..-..-..'
-            match = re.search(mac_pattern, str(html))
-            if match:
-                mac = match.group()
-                mac = mac.replace("-", ':')
-                db.set(mac, ip)
-                attr = meta.get(mac) if meta.get(mac) else {}
-                attr['type'] = 'lan'
-                meta.set(mac, attr)
-                meta.dump()
+            try:
+                response.shutdown(socket.SHUT_RD)
+                response.close()
+                mac_pattern = r'..-..-..-..-..-..'
+                match = re.search(mac_pattern, str(html))
+                if match:
+                    mac = match.group()
+                    mac = mac.replace("-", ':')
+                    db.set(mac, ip)
+                    attr = meta.get(mac) if meta.get(mac) else {}
+                    attr['type'] = 'lan'
+                    meta.set(mac, attr)
+                    meta.dump()
 
-                data = db.getall()
-                for key in data:
-                    if key != mac and db.get(key) == ip:
-                        db.set(key, "None")
-                db.dump()
+                    data = db.getall()
+                    for key in data:
+                        if key != mac and db.get(key) == ip:
+                            db.set(key, "None")
+                    db.dump()
+            except:
+                print("Socket not found")
 
             else:
                 print("MAC ADDR not found")

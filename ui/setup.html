@@ -11,10 +11,20 @@
   <button id="set-wifi">Set WiFi</button>
   <button id="connect">Connect</button>
   <button id="scan">Scan</button>
+  <button id="update">Update</button>
 
   <div id="status"></div>
 
   <script>
+    // Update
+      document.getElementById("scan").addEventListener("click", () => {
+      fetch("http://127.0.0.1:8080/update-project", {
+        method: "POST",
+        .then(data => {
+          document.getElementById("status").innerHTML = JSON.stringify(data)
+        })
+      })
+    })
     // Get status
     document.getElementById("get-status").addEventListener("click", () => {
       fetch("http://127.0.0.1:8080/status")
