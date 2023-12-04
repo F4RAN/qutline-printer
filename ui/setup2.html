@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/vue3-toastify@0.1.13/dist/index.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <title>Printer WiFi Setup</title>
   <style>
@@ -137,14 +138,24 @@
     small a:hover {
       color: #0056b3;
     }
-    .toggle-btn {
-      height: 100%;
-      position: absolute;
-      right: 10px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-    }
+    .password-container{
+      width: 400px;
+      position: relative;
+      }
+  .password-container input[type="password"],
+  .password-container input[type="text"]{
+    width: 100%;
+    padding: 12px 36px 12px 12px;
+    box-sizing: border-box;
+  }
+  .fa-eye{
+    position: absolute;
+    top: 28%;
+    right: 4%;
+    cursor: pointer;
+    color: lightgray;
+  }
+
   </style>
 </head>
 <body>
@@ -169,22 +180,11 @@
       <label for="ssid">SSID:</label>
       <input type="text" id="ssid" v-model="ssid" placeholder="Enter SSID">
 
-        <div>
-
-          <input
-            type="password"
-            v-model="password"
-          >
-
-          <button
-            @click="showPassword = !showPassword"
-            class="toggle-btn"
-          >
-            <i v-if="showPassword" class="fas fa-eye-slash"></i>
-            <i v-else class="fas fa-eye"></i>
-          </button>
-
-        </div>
+      <label for="password">Password:</label>
+      <div class="password-container">
+        <input :type="!showPassword ? 'password' : 'text'" placeholder="Password..." id="password">
+        <i class="fa-solid fa-eye" id="eye"></i>
+      </div>
 
       <button @click="setWiFi">Done, Go Next Step</button>
     </div>
@@ -234,7 +234,7 @@
         printerIp: '',
         loading: false,
         approve: false,
-        showPassword:false,
+        showPassword: false
       };
     },
     mounted() {
