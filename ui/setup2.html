@@ -216,6 +216,21 @@
       };
     },
     methods: {
+      getWifiName(){
+        this.loading = true; // Show loading overlay
+        fetch("http://127.0.0.1:8080/get_wifi")
+          .then(res => res.json())
+          .then(data => {
+            this.loading = false; // Hide loading overlay
+            this.ssid = data.ssid;
+          })
+          .catch(error => {
+            this.loading = false; // Hide loading overlay on error
+            console.error('Error getting WiFi:', error);
+            toast.error("Error:", error)
+          });
+      },
+
       getWiFi() {
         this.loading = true; // Show loading overlay
         fetch("http://127.0.0.1:8080/get_wifi")
