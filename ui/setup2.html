@@ -181,7 +181,7 @@
 
       <label for="password">Password:</label>
       <div class="password-container">
-        <input :type="!showPassword ? 'password' : 'text'" placeholder="Password..." id="password">
+        <input :type="!showPassword ? 'password' : 'text'" placeholder="Password..." v-model="passowrd" id="password">
         <i @click="showPassword = !showPassword" class="fa-solid fa-eye" id="eye"></i>
       </div>
 
