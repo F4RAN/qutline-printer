@@ -267,7 +267,7 @@
             if(!this.approve && data.ssid != this.ssid){
               this.loading = false;
               this.approve = true
-              this.toast.info("You not connected to the printer's network WiFi, if you want to continue Push Finish Button Again")
+              toast.warn("You not connected to the printer's network WiFi, if you want to continue Push Finish Button Again")
             }
           })
           .catch(error => {
@@ -298,7 +298,7 @@
           .then(data => {
             if (data.status == 200) {
               this.loading = false; // Hide loading overlay
-              toast.info(`Printer Connected to ${this.ssid} Successfully.`)
+              toast.success(`Printer Connected to ${this.ssid} Successfully.`)
               this.nextStep(); // Go to next step
             }
             else {
