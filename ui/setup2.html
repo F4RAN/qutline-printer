@@ -206,7 +206,7 @@
         <div style="text-align:left">
             <p>Printer connected successfully!</p>
             <div style="padding:10px;background:#9dfecd;color:black;border-radius:10px">
-            <small>Now you must connect back to the {{ ssid }}</small>
+            <small>Now you must connect back to the {{ ssid }} if It's not connected automatically.</small>
 
             </div>
         </div>
@@ -255,7 +255,7 @@
           });
       },
 
-      getWiFi() {
+      checkFinish() {
         this.loading = true; // Show loading overlay
         fetch("http://127.0.0.1:8080/get_wifi")
           .then(res => res.json())
