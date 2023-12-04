@@ -137,7 +137,14 @@
     small a:hover {
       color: #0056b3;
     }
-
+    .toggle-btn {
+      height: 100%;
+      position: absolute;
+      right: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -162,8 +169,22 @@
       <label for="ssid">SSID:</label>
       <input type="text" id="ssid" v-model="ssid" placeholder="Enter SSID">
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" v-model="password" placeholder="Enter Password">
+        <div>
+
+          <input
+            type="password"
+            v-model="password"
+          >
+
+          <button
+            @click="showPassword = !showPassword"
+            class="toggle-btn"
+          >
+            <i v-if="showPassword" class="fas fa-eye-slash"></i>
+            <i v-else class="fas fa-eye"></i>
+          </button>
+
+        </div>
 
       <button @click="setWiFi">Done, Go Next Step</button>
     </div>
@@ -212,8 +233,12 @@
         printerMac: '',
         printerIp: '',
         loading: false,
-        approve: false
+        approve: false,
+        showPassword:false,
       };
+    },
+    mounted() {
+      this.getWifiName();
     },
     methods: {
       getWifiName(){
