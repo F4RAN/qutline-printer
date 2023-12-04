@@ -43,7 +43,7 @@ def set_wifi():
 
 
 @app.route("/get_wifi", methods=["GET"])
-def set_wifi():
+def get_wifi():
     # Check wifi name in termux
     ssid = ""
     try:
