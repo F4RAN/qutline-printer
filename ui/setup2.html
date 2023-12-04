@@ -226,6 +226,7 @@
               window.location.href = `http://dev.vitalize.dev/store/${store}/settings`
             }
             if(!this.approve && data.ssid != this.ssid){
+              this.loading = false;
               this.approve = true
               this.toast.warning("You not connected to the printer's network WiFi, if you want to continue Push Finish Button Again")
             }
