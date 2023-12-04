@@ -150,7 +150,7 @@
     <div class="loading-text" v-if="step == 3" style="display:none" :style="{'display':'show', 'top':'120px'}">It may take a while</div>
   </div>
   <div class="card">
-    <h2>{{step == 1 ? 'WiFi Settings (Step 1/3)' : step == 2 ? 'Connect to the Printer (Step 2/3)' : 'Connect the Printer to the Wi-Fi (Step 3/3)'}}</h2>
+    <h2>{{step == 1 ? 'WiFi Settings (Step 1/4)' : step == 2 ? 'Connect to the Printer (Step 2/4)' : step == 3 ? 'Connect the Printer to the Wi-Fi (Step 3/4)' : `Connect the Back to the ${ssid} (Step 4/4)`}}</h2>
     <div v-if="step == 1">
       <div style="text-align:left">
         <p>Please enter your WiFi information that you want the printer to connect to</p>
@@ -182,6 +182,17 @@
         <button @click="connectPrinter">Connect</button>
       </div>
     </div>
+    <div v-if="step == 4">
+        <div style="text-align:left">
+            <p>Printer connected successfully!</p>
+            <div style="padding:10px;background:#9dfecd;color:black;border-radius:10px">
+            <small>Now you must connect back to the {{ ssid }}</small>
+
+            </div>
+        </div>
+        <hr>
+        <button @click="checkFinish">Done, Finish Setup</button>
+    </div>
   </div>
 </div>
 
@@ -201,9 +212,31 @@
         printerMac: '',
         printerIp: '',
         loading: false,
+        approve: false
       };
     },
     methods: {
+      getWiFi() {
+        this.loading = true; // Show loading overlay
+        fetch("http://127.0.0.1:8080/get_wifi")
+          .then(res => res.json())
+          .then(data => {
+            if(this.approve){
+              var pathArray = window.location.pathname.split('/');
+              let store = pathArray[2]
+              window.location.href = `http://dev.vitalize.dev/store/${store}/settings`
+            }
+            if(!this.approve && data.ssid != this.ssid){
+              this.approve = true
+              this.toast.warning("You not connected to the printer's network WiFi, if you want to continue Push Finish Button Again")
+            }
+          })
+          .catch(error => {
+            this.loading = false; // Hide loading overlay on error
+            console.error('Error setting WiFi:', error);
+            toast.error("Error:", error)
+          });
+      },
       nextStep() {
         // Simulate step transition (you can add actual logic here)
         if (this.step === 1) {
@@ -211,7 +244,9 @@
         } else if (this.step === 2) {
           this.scanPrinters(); // Execute scan before step 3
           this.step = 3;
-
+        }
+        else{
+        this.step += 1;
         }
       },
       connectPrinter() {
@@ -225,6 +260,7 @@
             if (data.status == 200) {
               this.loading = false; // Hide loading overlay
               toast.info(`Printer Connected to ${ssid} Successfully.`)
+              this.nextStep(); // Go to next step
             }
             else {
               this.loading = false; // Hide loading overlay on error
