@@ -1,5 +1,6 @@
 import os
 import subprocess
+import threading
 import uuid
 from threading import Thread
 from time import sleep
@@ -78,6 +79,9 @@ def scan_printer():
         res.append({f'{key}': db.get(key)})
     return jsonify(res)
 
+def write_image(image_data, file_path):
+    with open(file_path, "wb") as f:
+        f.write(image_data)
 
 @app.route("/print", methods=["POST"])
 def print_receipt():
@@ -93,11 +97,16 @@ def print_receipt():
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
     # Ensure file saved and finished
-    with open(image_path, "wb") as f:
-        f.write(image_file.read())
-        f.flush()
-        os.fsync(f.fileno())
-    sleep(1)
+    # with open(image_path, "wb") as f:
+    #     f.write(image_file.read())
+    #     f.flush()
+    #     os.fsync(f.fileno())
+    thread = threading.Thread(
+        target=write_image,
+        args=(image_file, image_path)
+    )
+    thread.start()
+    thread.join()  # Wait for thread to complete
     try:
         res = print_base64(image_path, db)
         if res:
