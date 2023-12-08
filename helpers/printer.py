@@ -16,7 +16,7 @@ def print_base64(image_path, db):
                 ip = db.get(key)
                 break
 
-
+        print(ip)
         printer = Network(ip, port=9100)  # Replace with your printer's IP address and port
         printer.set(align='center', width=2, height=2)
         printer.image(image_path)
