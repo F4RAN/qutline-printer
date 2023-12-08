@@ -11,6 +11,7 @@ from flask_cors import CORS
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
 import pickledb
+
 save_lock = Lock()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -79,6 +80,7 @@ def scan_printer():
         res.append({f'{key}': db.get(key)})
     return jsonify(res)
 
+
 def save_image(image_file):
     with save_lock:
         # Generate a unique file name using uuid
@@ -93,6 +95,7 @@ def save_image(image_file):
 
         return image_path
 
+
 @app.route("/print", methods=["POST"])
 def print_receipt():
     if 'imageFile' not in request.files:
@@ -105,7 +108,7 @@ def print_receipt():
 
     # Save the image file to a desired location
 
-    image_path = os.path.join("./images/",str(random.randint(0,10)) + image_file.filename)
+    image_path = os.path.join("./images/", str(random.randint(0, 100)) + image_file.filename)
     # Ensure file saved and finished
     with open(image_path, "wb") as f:
         f.write(image_file.read())
