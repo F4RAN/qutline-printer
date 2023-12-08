@@ -15,6 +15,7 @@ print_queue = queue.Queue()
 def print_handler():
     while True:
         item = print_queue.get()
+        lock = True
         try:
             # Connect to printer
             printer = Network(item['ip'], port=9100)
@@ -22,6 +23,7 @@ def print_handler():
             printer.set(align='center', width=2, height=2)
             printer.image(item['image'])
             printer.cut()
+            print("here")
         except Exception as e:
             print("Printer queue error", e)
         # Handle errors
