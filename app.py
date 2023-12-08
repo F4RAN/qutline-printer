@@ -1,5 +1,6 @@
 import os
 import subprocess
+import uuid
 from time import sleep
 from datetime import datetime
 import requests
@@ -82,14 +83,12 @@ def print_receipt():
         return jsonify({'success': False, 'message': 'No image file selected'})
 
     # Save the image file to a desired location
-    # dt = datetime.now()
-    # now = str(dt.year) + str(dt.month) + str(dt.day) + str(dt.second) + str(dt.microsecond)
-    # image_path = os.path.join("./", now + image_file.filename)
-    # image_file.save(image_path)
-    # image_file.close()
-    image_data = image_file.read()
+
+    image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
+    image_file.save(image_path)
+    image_file.close()
     try:
-        res = print_base64(image_data,db)
+        res = print_base64(image_path,db)
         if res:
             return {'success': True}
         else:
