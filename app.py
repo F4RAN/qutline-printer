@@ -1,4 +1,5 @@
 import os
+import random
 import subprocess
 import uuid
 from threading import Thread, Lock
@@ -104,7 +105,7 @@ def print_receipt():
 
     # Save the image file to a desired location
 
-    image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
+    image_path = os.path.join("./images/",str(random.randint(0,10)) + image_file.filename)
     # Ensure file saved and finished
     with open(image_path, "wb") as f:
         f.write(image_file.read())
