@@ -30,13 +30,13 @@ def print_handler():
             # Try 3 times
             if counter == 3:
                 print("3 Times Occured,")
-                pass
-            print("Printer queue error", e)
-            print_queue.put({
-                'image': item['image'],
-                'ip': item['ip']
-            })
-            counter += 1
+            else:
+                print("Printer queue error", e)
+                print_queue.put({
+                    'image': item['image'],
+                    'ip': item['ip']
+                })
+                counter += 1
 
         # Handle errors
 
