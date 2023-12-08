@@ -130,6 +130,9 @@ def update_project():
     sleep(5)
     # update termux
     timer = 0
+    # update project
+    os.system('pip install --upgrade pip')
+    os.system('pip install -r requirements.txt')
     sb = subprocess.Popen(['./setup/update.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while sb.poll() is None:
         print(str(sb.stdout.readline()))
