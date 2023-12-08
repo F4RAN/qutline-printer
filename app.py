@@ -1,8 +1,7 @@
 import os
 import subprocess
-import threading
 import uuid
-from threading import Thread
+from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
 import requests
@@ -11,17 +10,10 @@ from flask_cors import CORS
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
 import pickledb
-
+save_lock = Lock()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
-db = pickledb.load('./dbs/data.db', False)
-meta = pickledb.load('./dbs/meta.db', False)
-wifi = pickledb.load('./dbs/wifi.db', False)
-# Start print handler thread
-t = Thread(target=print_handler)
-t.daemon = True
-t.start()
 
 
 @app.route("/status", methods=["GET"])
@@ -79,9 +71,19 @@ def scan_printer():
         res.append({f'{key}': db.get(key)})
     return jsonify(res)
 
-def write_image(image_data, file_path):
-    with open(file_path, "wb") as f:
-        f.write(image_data)
+def save_image(image_file):
+    with save_lock:
+        # Generate a unique file name using uuid
+        filename = str(uuid.uuid4()) + image_file.filename
+        image_path = os.path.join("./images/", filename)
+
+        # Ensure file is saved and finished
+        with open(image_path, "wb") as f:
+            f.write(image_file.read())
+            f.flush()
+            os.fsync(f.fileno())
+
+        return image_path
 
 @app.route("/print", methods=["POST"])
 def print_receipt():
@@ -97,17 +99,11 @@ def print_receipt():
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
     # Ensure file saved and finished
-    # with open(image_path, "wb") as f:
-    #     f.write(image_file.read())
-    #     f.flush()
-    #     os.fsync(f.fileno())
-    image_data = image_file.read()
-    thread = threading.Thread(
-        target=write_image,
-        args=(image_data, image_path)
-    )
-    thread.start()
-    thread.join()  # Wait for thread to complete
+    with open(image_path, "wb") as f:
+        f.write(image_file.read())
+        f.flush()
+        os.fsync(f.fileno())
+
     try:
         res = print_base64(image_path, db)
         if res:
@@ -161,3 +157,10 @@ def setup():
 # Run the Flask application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
+    db = pickledb.load('./dbs/data.db', False)
+    meta = pickledb.load('./dbs/meta.db', False)
+    wifi = pickledb.load('./dbs/wifi.db', False)
+    # Start print handler thread
+    t = Thread(target=print_handler)
+    t.daemon = True
+    t.start()
