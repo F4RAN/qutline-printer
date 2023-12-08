@@ -242,7 +242,7 @@
     methods: {
       getWifiName(){
         this.loading = true; // Show loading overlay
-        fetch("http://127.0.0.1:8080/get_wifi")
+        fetch("http://127.0.0.1:8081/get_wifi")
           .then(res => res.json())
           .then(data => {
             this.loading = false; // Hide loading overlay
@@ -257,12 +257,12 @@
 
       checkFinish() {
         this.loading = true; // Show loading overlay
-        fetch("http://127.0.0.1:8080/get_wifi")
+        fetch("http://127.0.0.1:8081/get_wifi")
           .then(res => res.json())
           .then(data => {
             if(this.approve){
               let store = window.location.search.split('=')[1]
-              window.location.href = `http://dev.vitalize.dev/store/${store}/settings`
+              window.location.href = `http://dev.vitalize.dev/store/${store}/settings?active=devices`
             }
             if(!this.approve && data.ssid != this.ssid){
               this.loading = false;
@@ -291,7 +291,7 @@
       connectPrinter() {
         this.loading = true; // Show loading overlay
         // Simulate connecting to the printer (you can add actual logic here)
-        fetch("http://127.0.0.1:8080/connect_wifi/" + this.printerMac, {
+        fetch("http://127.0.0.1:8081/connect_wifi/" + this.printerMac, {
           method: "POST"
         })
           .then(res => res)
@@ -315,7 +315,7 @@
       },
       setWiFi() {
         this.loading = true; // Show loading overlay
-        fetch("http://127.0.0.1:8080/set_wifi", {
+        fetch("http://127.0.0.1:8081/set_wifi", {
           method: "POST",
           body: JSON.stringify({
             SSID: this.ssid,
@@ -347,7 +347,7 @@
       scanPrinters() {
         // Simulate scanning printers (you can add actual logic here)
         this.loading = true;
-        fetch("http://127.0.0.1:8080/scan", {
+        fetch("http://127.0.0.1:8081/scan", {
           method: "POST"
         })
           .then(res => res.json())

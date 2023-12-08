@@ -65,11 +65,14 @@ def scan(rng, db, meta):
             response.send(request.encode('utf-8'))
 
             html = b""
-            while True:
-                data = response.recv(1024)
-                if not data:
-                    break
-                html += data
+            try:
+                while True:
+                    data = response.recv(1024)
+                    if not data:
+                        break
+                    html += data
+            except:
+                continue
             try:
                 response.shutdown(socket.SHUT_RD)
                 response.close()
@@ -97,10 +100,10 @@ def scan(rng, db, meta):
 
             pass
     data = db.getall()
-    for key in data:
-        if db.get(key) not in founded_ips:
-            db.set(key, "None")
-            db.dump()
+    # for key in data:
+    #     if db.get(key) not in founded_ips:
+    #         db.set(key, "None")
+    #         db.dump()
     return data
 
 

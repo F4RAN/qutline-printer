@@ -1,4 +1,3 @@
-import multiprocessing
 import os
 import subprocess
 from time import sleep
@@ -11,7 +10,7 @@ from helpers.printer import print_base64, scan, is_online, connect_to_wifi
 import pickledb
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:*"]}})
+CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000" , "http://localhost:*"]}})
 db = pickledb.load('./dbs/data.db', False)
 meta = pickledb.load('./dbs/meta.db', False)
 wifi = pickledb.load('./dbs/wifi.db', False)
@@ -107,7 +106,7 @@ def check_update():
     if in_version == out_version:
         return jsonify({'update': False})
     else:
-        return jsonify({'update': True})
+        return jsonify({'update': True, 'version': out_version})
 
 
 
@@ -139,4 +138,4 @@ def setup():
 
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8081)
