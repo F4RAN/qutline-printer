@@ -3,6 +3,7 @@ import os
 import time
 from time import sleep
 
+from PIL import Image
 from escpos.printer import Network
 import subprocess
 import re
@@ -23,7 +24,8 @@ def print_handler():
             printer = Network(item['ip'], port=9100)
             # Print image
             printer.set(align='center', width=2, height=2)
-            printer.image(item['image'])
+            img = Image.open(item['image'])
+            printer.image(img)
             printer.cut()
             sleep(1)
         except Exception as e:

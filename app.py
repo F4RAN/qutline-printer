@@ -96,14 +96,12 @@ def print_receipt():
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
     # Ensure file saved and finished
-    # with open(image_path, "wb") as f:
-    #     f.write(image_file.read())
-    #     f.flush()
-    #     os.fsync(f.fileno())
-    image = Image.open(image_file)
+    img = Image.open(image_file)
+    img = img.convert('L')
+    img.save(image_path)
 
     try:
-        res = print_base64(image, db)
+        res = print_base64(image_path, db)
         if res:
             return {'success': True}
         else:
