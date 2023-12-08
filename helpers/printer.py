@@ -4,8 +4,27 @@ import subprocess
 import re
 import requests
 import socket
-
+import queue
+from threading import Thread
 tout = 20
+print_queue = queue.Queue()
+
+
+def print_handler():
+    while True:
+        item = print_queue.get()
+        try:
+            # Connect to printer
+            printer = Network(item['ip'], port=9100)
+            # Print image
+            printer.set(align='center', width=2, height=2)
+            printer.image(item['image'])
+            printer.cut()
+        except Exception as e:
+            print("Printer queue error", e)
+        # Handle errors
+
+        print_queue.task_done()
 
 
 def print_base64(image_path, db):
@@ -15,12 +34,10 @@ def print_base64(image_path, db):
             if db.get(key) != "None":
                 ip = db.get(key)
                 break
-
-        printer = Network(ip, port=9100)  # Replace with your printer's IP address and port
-        printer.set(align='center', width=2, height=2)
-        printer.image(image_path)
-        # Cut the paper
-        printer.cut()
+        print_queue.put({
+            'image': image_path,
+            'ip': ip
+        })
         return True
     except Exception as e:
         print(e)

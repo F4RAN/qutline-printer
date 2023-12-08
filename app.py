@@ -1,13 +1,14 @@
 import os
 import subprocess
 import uuid
+from threading import Thread
 from time import sleep
 from datetime import datetime
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
-from helpers.printer import print_base64, scan, is_online, connect_to_wifi
+from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
 import pickledb
 
 app = Flask(__name__)
@@ -15,6 +16,10 @@ CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127
 db = pickledb.load('./dbs/data.db', False)
 meta = pickledb.load('./dbs/meta.db', False)
 wifi = pickledb.load('./dbs/wifi.db', False)
+# Start print handler thread
+t = Thread(target=print_handler)
+t.daemon = True
+t.start()
 
 
 @app.route("/status", methods=["GET"])
