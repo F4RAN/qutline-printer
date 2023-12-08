@@ -1,7 +1,4 @@
 import errno
-import os
-import uuid
-
 from escpos.printer import Network
 import subprocess
 import re
@@ -17,14 +14,11 @@ def print_handler():
     while True:
         item = print_queue.get()
         try:
-            image_path = os.path.join("./images/", str(uuid.uuid4()) + item['image'].filename)
-            with open(image_path, "wb") as f:
-                f.write(item['image'].read())
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
             printer.set(align='center', width=2, height=2)
-            printer.image(image_path)
+            printer.image(item['image'])
             printer.cut()
         except Exception as e:
             print("Printer queue error", e)
@@ -33,7 +27,7 @@ def print_handler():
         print_queue.task_done()
 
 
-def print_base64(image_file, db):
+def print_base64(image_path, db):
     try:  # Connect to the printer
         data = db.getall()
         for key in data:
@@ -41,7 +35,7 @@ def print_base64(image_file, db):
                 ip = db.get(key)
                 break
         print_queue.put({
-            'image': image_file,
+            'image': image_path,
             'ip': ip
         })
         return True

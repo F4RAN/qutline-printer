@@ -12,7 +12,8 @@ from helpers.printer import print_base64, scan, is_online, connect_to_wifi, prin
 import pickledb
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000" , "http://localhost:*"]}})
+CORS(app, resources={r"/*": {
+    "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 db = pickledb.load('./dbs/data.db', False)
 meta = pickledb.load('./dbs/meta.db', False)
 wifi = pickledb.load('./dbs/wifi.db', False)
@@ -51,7 +52,8 @@ def get_wifi():
     # Check wifi name in termux
     ssid = ""
     try:
-        ssid = subprocess.check_output(['termux-wifi-connectioninfo']).decode('utf-8').split('"ssid": "')[1].split('"')[0]
+        ssid = subprocess.check_output(['termux-wifi-connectioninfo']).decode('utf-8').split('"ssid": "')[1].split('"')[
+            0]
     except:
         pass
 
@@ -89,9 +91,13 @@ def print_receipt():
 
     # Save the image file to a desired location
 
-
+    image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
+    with open(image_path, "wb") as f:
+        f.write(image_file.read())
+        f.flush()
+        os.fsync(f.fileno())
     try:
-        res = print_base64(image_file,db)
+        res = print_base64(image_path, db)
         if res:
             return {'success': True}
         else:
@@ -99,6 +105,7 @@ def print_receipt():
     except Exception as e:
         print(e)
         return {'success': False}
+
 
 @app.route("/check-update", methods=["GET"])
 def check_update():
@@ -112,8 +119,6 @@ def check_update():
         return jsonify({'update': False})
     else:
         return jsonify({'update': True, 'version': out_version})
-
-
 
 
 @app.route('/update-project', methods=['POST'])
