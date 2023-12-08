@@ -97,7 +97,7 @@ def print_receipt():
         f.write(image_file.read())
         f.flush()
         os.fsync(f.fileno())
-    slee(1)
+    sleep(1)
     try:
         res = print_base64(image_path, db)
         if res:
