@@ -4,12 +4,9 @@ import subprocess
 from time import sleep
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
-
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi
-import socket
 import pickledb
-import signal
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:*"]}})
@@ -97,14 +94,17 @@ def print_receipt():
         print(e)
         return {'success': False}
 
+@app.route("/check-update", methods=["GET"])
+def check_update():
+    # Read version file
+    with open('version.txt', 'r') as f:
+        version = f.read()
+    if version !=
+
+
 
 @app.route('/update-project', methods=['POST'])
 def update_project():
-    # update project
-    # os.system('pip install --upgrade pip')
-    # os.system('pip install -r requirements.txt')
-    #
-    # # Fetch latest code from GitHub
     repo_url = 'https://github.com/F4RAN/qutline-printer.git'
     os.system(f'git pull {repo_url}')
     sleep(5)
