@@ -101,9 +101,10 @@ def print_receipt():
     #     f.write(image_file.read())
     #     f.flush()
     #     os.fsync(f.fileno())
+    image_data = image_file.read()
     thread = threading.Thread(
         target=write_image,
-        args=(image_file, image_path)
+        args=(image_data, image_path)
     )
     thread.start()
     thread.join()  # Wait for thread to complete
