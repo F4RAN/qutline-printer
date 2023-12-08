@@ -89,11 +89,9 @@ def print_receipt():
 
     # Save the image file to a desired location
 
-    image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
-    image_file.save(image_path)
-    image_file.close()
+
     try:
-        res = print_base64(image_path,db)
+        res = print_base64(image_file,db)
         if res:
             return {'success': True}
         else:
