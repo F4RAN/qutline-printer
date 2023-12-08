@@ -18,8 +18,8 @@ def print_handler():
         item = print_queue.get()
         try:
             image_path = os.path.join("./images/", str(uuid.uuid4()) + item['image'].filename)
-            item['image'].save(image_path)
-            item['image'].close()
+            with open(image_path, "wb") as f:
+                f.write(item['image'].read())
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
