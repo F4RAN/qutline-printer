@@ -14,6 +14,13 @@ save_lock = Lock()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
+db = pickledb.load('./dbs/data.db', False)
+meta = pickledb.load('./dbs/meta.db', False)
+wifi = pickledb.load('./dbs/wifi.db', False)
+# Start print handler thread
+t = Thread(target=print_handler)
+t.daemon = True
+t.start()
 
 
 @app.route("/status", methods=["GET"])
@@ -157,10 +164,3 @@ def setup():
 # Run the Flask application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
-    db = pickledb.load('./dbs/data.db', False)
-    meta = pickledb.load('./dbs/meta.db', False)
-    wifi = pickledb.load('./dbs/wifi.db', False)
-    # Start print handler thread
-    t = Thread(target=print_handler)
-    t.daemon = True
-    t.start()
