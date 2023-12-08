@@ -8,9 +8,16 @@ import socket
 tout = 20
 
 
-def print_base64(image_path):
+def print_base64(image_path, db):
     try:  # Connect to the printer
-        printer = Network("192.168.1.100", port=9100)  # Replace with your printer's IP address and port
+        data = db.getall()
+        for key in data:
+            if db.get(key) != "None":
+                ip = db.get(key)
+                break
+
+
+        printer = Network(ip, port=9100)  # Replace with your printer's IP address and port
         printer.set(align='center', width=2, height=2)
         printer.image(image_path)
         # Cut the paper

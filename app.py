@@ -86,7 +86,7 @@ def print_receipt():
     image_file.save(image_path)
     image_file.close()
     try:
-        res = print_base64(image_path)
+        res = print_base64(image_path,db)
         if res:
             return {'success': True}
         else:
