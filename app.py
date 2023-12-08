@@ -2,6 +2,8 @@ import multiprocessing
 import os
 import subprocess
 from time import sleep
+
+import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
@@ -96,10 +98,17 @@ def print_receipt():
 
 @app.route("/check-update", methods=["GET"])
 def check_update():
-    # Read version file
-    with open('version.txt', 'r') as f:
-        version = f.read()
-    if version !=
+    # Read VERSION file
+    with open('VERSION', 'r') as f:
+        in_version = f.read()
+    res = requests.get('https://raw.githubusercontent.com/F4RAN/qutline-printer/main/VERSION')
+    out_version = res.text
+    print(in_version, out_version)
+    if in_version == out_version:
+        return jsonify({'update': False})
+    else:
+        return jsonify({'update': True})
+
 
 
 
