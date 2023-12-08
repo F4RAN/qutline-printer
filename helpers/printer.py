@@ -1,4 +1,6 @@
 import errno
+from time import sleep
+
 from escpos.printer import Network
 import subprocess
 import re
@@ -23,7 +25,7 @@ def print_handler():
         except Exception as e:
             print("Printer queue error", e)
         # Handle errors
-
+        sleep(5)
         print_queue.task_done()
 
 

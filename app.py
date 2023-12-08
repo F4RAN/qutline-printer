@@ -92,6 +92,7 @@ def print_receipt():
     # Save the image file to a desired location
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
+    # Ensure file saved and finished
     with open(image_path, "wb") as f:
         f.write(image_file.read())
         f.flush()
