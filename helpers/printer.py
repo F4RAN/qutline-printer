@@ -27,16 +27,13 @@ def print_handler():
             printer.cut()
             sleep(1)
         except Exception as e:
-            # Try 3 times
-            if counter == 3:
-                print("3 Times Occured,")
-            else:
-                print("Printer queue error", e)
-                print_queue.put({
-                    'image': item['image'],
-                    'ip': item['ip']
-                })
-                counter += 1
+            printer = Network(item['ip'], port=9100)
+            # Print image
+            printer.set(align='center', width=2, height=2)
+            printer.image(item['image'])
+            printer.cut()
+            sleep(1)
+            print("Printer queue error", e)
 
         # Handle errors
 
