@@ -21,6 +21,7 @@ def wait_for_image(image_path):
 def print_handler():
     while True:
         item = print_queue.get()
+        counter = 1
         try:
             wait_for_image(item['image'])
 
@@ -30,9 +31,19 @@ def print_handler():
             printer.set(align='center', width=2, height=2)
             printer.image(item['image'])
             printer.cut()
-            sleep(4)
+            sleep(1)
         except Exception as e:
+            # Try 3 times
+            if counter == 3:
+                print("3 Times Occured,")
+                pass
             print("Printer queue error", e)
+            print_queue.put({
+                'image': item['image'],
+                'ip': item['ip']
+            })
+            counter += 1
+
         # Handle errors
 
         print_queue.task_done()
