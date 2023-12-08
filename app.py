@@ -10,6 +10,9 @@ from flask_cors import CORS
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
 import pickledb
+from PIL import Image
+
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -93,13 +96,14 @@ def print_receipt():
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
     # Ensure file saved and finished
-    with open(image_path, "wb") as f:
-        f.write(image_file.read())
-        f.flush()
-        os.fsync(f.fileno())
+    # with open(image_path, "wb") as f:
+    #     f.write(image_file.read())
+    #     f.flush()
+    #     os.fsync(f.fileno())
+    image = Image.open(image_file)
 
     try:
-        res = print_base64(image_path, db)
+        res = print_base64(image, db)
         if res:
             return {'success': True}
         else:
