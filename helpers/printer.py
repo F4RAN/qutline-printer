@@ -13,18 +13,12 @@ from threading import Thread
 tout = 20
 print_queue = queue.Queue()
 
-def wait_for_image(image_path):
-    while not os.path.exists(image_path):
-        print(f"Waiting for image: {image_path}")
-        time.sleep(1)  # You may need to import the time module
 
 def print_handler():
     while True:
         item = print_queue.get()
         counter = 1
         try:
-            wait_for_image(item['image'])
-
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
