@@ -10,9 +10,6 @@ from flask_cors import CORS
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
 import pickledb
-from PIL import Image
-
-
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -95,11 +92,10 @@ def print_receipt():
     # Save the image file to a desired location
 
     image_path = os.path.join("./images/", str(uuid.uuid4()) + image_file.filename)
-    # Ensure file saved and finished
-    img = Image.open(image_file)
-    img = img.convert('L')
-    img.save(image_path)
-
+    with open(image_path, "wb") as f:
+        f.write(image_file.read())
+        f.flush()
+        os.fsync(f.fileno())
     try:
         res = print_base64(image_path, db)
         if res:
@@ -132,9 +128,6 @@ def update_project():
     sleep(5)
     # update termux
     timer = 0
-    # update project
-    os.system('pip install --upgrade pip')
-    os.system('pip install -r requirements.txt')
     sb = subprocess.Popen(['./setup/update.sh'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while sb.poll() is None:
         print(str(sb.stdout.readline()))

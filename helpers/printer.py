@@ -1,9 +1,6 @@
 import errno
-import os
-import time
 from time import sleep
 
-from PIL import Image
 from escpos.printer import Network
 import subprocess
 import re
@@ -18,31 +15,22 @@ print_queue = queue.Queue()
 def print_handler():
     while True:
         item = print_queue.get()
-        counter = 1
         try:
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
             printer.set(align='center', width=2, height=2)
-            img = Image.open(item['image'])
-            printer.image(img)
-            printer.cut()
-            sleep(1)
-        except Exception as e:
-            printer = Network(item['ip'], port=9100)
-            # Print image
-            printer.set(align='center', width=2, height=2)
             printer.image(item['image'])
             printer.cut()
-            sleep(1)
+            sleep(4)
+        except Exception as e:
             print("Printer queue error", e)
-
         # Handle errors
 
         print_queue.task_done()
 
 
-def print_base64(image, db):
+def print_base64(image_path, db):
     try:  # Connect to the printer
         data = db.getall()
         for key in data:
@@ -50,7 +38,7 @@ def print_base64(image, db):
                 ip = db.get(key)
                 break
         print_queue.put({
-            'image': image,
+            'image': image_path,
             'ip': ip
         })
         return True
