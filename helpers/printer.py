@@ -16,6 +16,7 @@ def print_handler():
     while True:
         item = print_queue.get()
         try:
+            # Get length of image
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
@@ -24,7 +25,7 @@ def print_handler():
             printer.image(item['image'])
             printer.cut()
             printer.close()
-            sleep(1)
+            sleep(6)
         except Exception as e:
             print("Printer queue error", e)
         # Handle errors
