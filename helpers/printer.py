@@ -170,6 +170,7 @@ def connect_to_wifi(mac, wifi, db):
         pass
 
 def hard_reset_printer(mac, db):
+    # Command : 1f 1b 1f 27 13 14 52 00
     # reset printer
     ip = db.get(mac)
     p = Network(ip, port=9100)

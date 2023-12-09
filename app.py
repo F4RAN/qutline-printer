@@ -148,7 +148,7 @@ def setup():
 @app.route('/hard-reset/<mac>', methods=['POST'])
 def hard_reset(mac):
     try:
-        hard_reset_printer(mac)
+        hard_reset_printer(mac,db)
         return jsonify({'message': 'Printer reset successfully'})
     except Exception as e:
         print(e)
