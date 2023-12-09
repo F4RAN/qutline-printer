@@ -31,7 +31,7 @@ def check_status():
         role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys()) else "None"
         typ = meta.get(key)['type'] if meta.get(key) and ('type' in meta.get(key).keys()) else "None"
         res.append({f'{key}': {'ip': db.get(key),
-                               'is_online': is_online(db.get(key), '9100') if db.get(key) != 'None' else "None",
+                               'is_online': is_online(db.get(key)) if db.get(key) != 'None' else "None",
                                'role': role, 'type': typ}})
     return jsonify({'wifi': {'SSID': wifi.get('SSID'), 'PASSWORD': wifi.get('PASSWORD')}, 'printers': res})
 
@@ -58,6 +58,23 @@ def get_wifi():
         pass
 
     return jsonify({'ssid': ssid})
+
+
+@app.route("/edit-printer/<mac>", methods=["PUT"])
+def edit_printer(mac):
+    req = request.json
+    if not db.get(mac):
+        return app.response_class("Mac address not found", 404)
+    if not req['ip']:
+        return app.response_class("IP is not exists", 400)
+    db.set(mac, req['ip'])
+    if req['role']:
+        obj = meta.get(mac)
+        obj['role'] = req['role']
+        meta.set(mac, obj)
+        meta.dump()
+    db.dump()
+    return "Printer edited successfully."
 
 
 @app.route("/connect_wifi/<mac>", methods=["POST"])
@@ -145,14 +162,16 @@ def setup():
     with open('ui/setup2.html', 'r') as f:
         return f.read()
 
+
 @app.route('/hard-reset/<mac>', methods=['POST'])
 def hard_reset(mac):
     try:
-        hard_reset_printer(mac,db)
+        hard_reset_printer(mac, db)
         return jsonify({'message': 'Printer reset successfully'})
     except Exception as e:
         print(e)
         return jsonify({'message': 'Printer reset failed'})
+
 
 # Run the Flask application
 if __name__ == '__main__':
