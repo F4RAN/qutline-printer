@@ -22,7 +22,7 @@ def print_handler():
             printer.set(align='center', width=2, height=2)
             printer.image(item['image'])
             printer.cut()
-            sleep(4)
+            sleep(6)
         except Exception as e:
             print("Printer queue error", e)
         # Handle errors
