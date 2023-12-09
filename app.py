@@ -8,7 +8,7 @@ import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
-from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler
+from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler, hard_reset_printer
 import pickledb
 
 app = Flask(__name__)
@@ -145,6 +145,14 @@ def setup():
     with open('ui/setup2.html', 'r') as f:
         return f.read()
 
+@app.route('/hard-reset/<mac>', methods=['POST'])
+def hard_reset(mac):
+    try:
+        hard_reset_printer(mac)
+        return jsonify({'message': 'Printer reset successfully'})
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'Printer reset failed'})
 
 # Run the Flask application
 if __name__ == '__main__':

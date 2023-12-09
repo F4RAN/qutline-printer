@@ -19,9 +19,11 @@ def print_handler():
             # Connect to printer
             printer = Network(item['ip'], port=9100)
             # Print image
+            printer.open()
             printer.set(align='center', width=2, height=2)
             printer.image(item['image'])
             printer.cut()
+            printer.close()
             sleep(6)
         except Exception as e:
             print("Printer queue error", e)
@@ -165,3 +167,16 @@ def connect_to_wifi(mac, wifi, db):
         print(e)
         print("HTTP request to printer to set wifi credentials failed.")
         pass
+
+def hard_reset_printer(mac, db):
+    # reset printer
+    ip = db.get(mac)
+    p = Network(ip, port=9100)
+    # Open connection
+    p.open()
+
+    # Reset command
+    p.text('\x1f\x1b\x1f\x27\x13\x14\x52\x00')
+
+    # Close connection
+    p.close()
