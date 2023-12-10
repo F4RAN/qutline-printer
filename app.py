@@ -60,6 +60,28 @@ def get_wifi():
     return jsonify({'ssid': ssid})
 
 
+@app.route("/add-printer", methods=["POST"])
+def add_printer():
+    req = request.json
+    if not req['mac'] or not req['ip']:
+        return app.response_class("Mac address or IP is not exists", 400)
+    if db.get(req['mac']):
+        return app.response_class("Mac address already exists", 400)
+    if db.get(req['mac']):
+        return app.response_class("Mac address already exists", 400)
+    # check role is exists
+    all_metas = meta.getall()
+    for key in all_metas:
+        mt = meta.get(key)
+        if 'role' in mt and mt['role'] == req['role']:
+            return app.response_class("Role already exists", 400)
+    db.set(req['mac'], req['ip'])
+    meta.set(req['mac'], {'role': req['role'], 'type': req['type']})
+    db.dump()
+    meta.dump()
+    return "Printer added successfully."
+
+
 @app.route("/edit-printer/<mac>", methods=["PUT"])
 def edit_printer(mac):
     req = request.json

@@ -1,1 +1,1 @@
-{"0C:7F:ED:C0:E0:4B": {"type": "wifi", "role": "Test34"}, "00:53:55:D3:51:8D": {"type": "lan"}}
+{"0C:7F:ED:C0:E0:4B": {"type": "wifi", "role": "Test34"}, "00:53:55:D3:51:8D": {"type": "lan"}, "12:12:12:12:12:12": {"role": "Test2", "type": "lan"}, "11:11:11:11:11:11": {"role": "Test22", "type": "wifi"}}
