@@ -69,7 +69,8 @@ wget -qO qutline-printer.zip https://github.com/F4RAN/qutline-printer/archive/re
 DIRECTORY="qutline-printer"
 if [ -d "$DIRECTORY" ]; then
     echo "Directory '$DIRECTORY' exists. Removing..."
-    rm -rf "$DIRECTORY"
+    chmod -R +w "$DIRECTORY"
+    rm -r "$DIRECTORY"
     echo "Directory '$DIRECTORY' removed."
 else
     echo "Directory '$DIRECTORY' does not exist."
