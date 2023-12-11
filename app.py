@@ -31,7 +31,7 @@ def check_status():
         role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys()) else "None"
         typ = meta.get(key)['type'] if meta.get(key) and ('type' in meta.get(key).keys()) else "None"
         res.append({f'{key}': {'ip': db.get(key),
-                               'is_online': is_online(db.get(key)) if db.get(key) != 'None' else "None",
+                               'is_online': is_online(db.get(key),'9100') if db.get(key) != 'None' else "None",
                                'role': role, 'type': typ}})
     return jsonify({'wifi': {'SSID': wifi.get('SSID'), 'PASSWORD': wifi.get('PASSWORD')}, 'printers': res})
 
