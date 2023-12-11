@@ -137,25 +137,25 @@ def scan(rng, db, meta):
     return data
 
 
-# def is_online(ip, port):
-#     try:
-#         socket.create_connection((ip, port), timeout=2)
-#         return True
-#     except socket.timeout:
-#         return False
-#     except socket.error as err:
-#         return False
-
-def is_online(ip):
-    parameter = '-n'
+def is_online(ip, port):
     try:
-        response = os.system('ping {} 1 {}'.format(parameter, ip))
-        if response == 0:
-            return True
-        else:
-            return False
-    except:
+        socket.create_connection((ip, port), timeout=2)
+        return True
+    except socket.timeout:
         return False
+    except socket.error as err:
+        return False
+
+# def is_online(ip):
+#     parameter = '-n'
+#     try:
+#         response = os.system('ping {} 1 {}'.format(parameter, ip))
+#         if response == 0:
+#             return True
+#         else:
+#             return False
+#     except:
+#         return False
 
 def connect_to_wifi(mac, wifi, db):
     headers = {
