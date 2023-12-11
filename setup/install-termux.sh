@@ -125,7 +125,7 @@ cat > "$SCRIPT_FILE" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 termux-wake-lock && sshd
 cd $(readlink -f "./$DIRECTORY") && source .venv/bin/activate &&
-python3 app.py run &> debug.txt &
+python3 app.py run 2> debug.txt &
 
 # Make the script executable
 chmod u+x "$SCRIPT_FILE"

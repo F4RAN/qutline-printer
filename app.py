@@ -109,10 +109,17 @@ def connect_wifi(mac):
 
 @app.route("/scan", methods=["POST"])
 def scan_printer():
-    res = []
+    setup = False
+    q = request.args.get('setup')
+    if q == '1':
+        setup = True
+
+
+
+
     private_ip = get_private_ip()
     rng = ".".join(private_ip.split(".")[:3])
-    data = scan(rng, db, meta)
+    data = scan(rng, db, meta, setup)
 
     return jsonify(data)
 

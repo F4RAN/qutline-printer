@@ -51,7 +51,7 @@ def print_base64(image_path, db):
         return False
 
 
-def scan(rng, db, meta):
+def scan(rng, db, meta, setup):
     founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
@@ -136,12 +136,10 @@ def scan(rng, db, meta):
     config_mac = ""
     for key in data:
         if db.get(key) in founded_ips:
-            config_ip = db.get(key)
-            config_mac = key
-        else:
+            result.append({key: db.get(key)})
+        elif not setup:
             result.append({key: db.get(key)})
     result.append({config_mac: config_ip})
-
     return result
 
 

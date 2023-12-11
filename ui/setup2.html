@@ -351,7 +351,7 @@
       scanPrinters() {
         // Simulate scanning printers (you can add actual logic here)
         this.loading = true;
-        fetch("http://127.0.0.1:8081/scan", {
+        fetch("http://127.0.0.1:8081/scan?setup=1", {
           method: "POST"
         })
           .then(res => res.json())
