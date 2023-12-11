@@ -113,9 +113,8 @@ def scan_printer():
     private_ip = get_private_ip()
     rng = ".".join(private_ip.split(".")[:3])
     data = scan(rng, db, meta)
-    for key in data:
-        res.append({f'{key}': db.get(key)})
-    return jsonify(res)
+
+    return jsonify(data)
 
 
 @app.route("/print", methods=["POST"])

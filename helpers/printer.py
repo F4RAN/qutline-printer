@@ -70,7 +70,7 @@ def scan(rng, db, meta):
 
     proc.wait()  # Wait for subprocess to exit
 
-    for ip in founded_ips[0:10]:
+    for ip in founded_ips:
         headers = {
             # 'Authorization': 'Basic admin:admin'
             'Authorization': 'Basic YWRtaW46YWRtaW4='
@@ -129,12 +129,20 @@ def scan(rng, db, meta):
                 print("MAC ADDR not found")
 
             pass
+
+    result = []
     data = db.getall()
-    # for key in data:
-    #     if db.get(key) not in founded_ips:
-    #         db.set(key, "None")
-    #         db.dump()
-    return data
+    config_ip = ""
+    config_mac = ""
+    for key in data:
+        if db.get(key) in founded_ips:
+            config_ip = db.get(key)
+            config_mac = key
+        else:
+            result.append({key: db.get(key)})
+    result.append({config_mac: config_ip})
+
+    return result
 
 
 def is_online(ip, port):
