@@ -132,14 +132,11 @@ def scan(rng, db, meta, setup):
 
     result = []
     data = db.getall()
-    config_ip = ""
-    config_mac = ""
     for key in data:
         if db.get(key) in founded_ips:
             result.append({key: db.get(key)})
         elif not setup:
             result.append({key: db.get(key)})
-    result.append({config_mac: config_ip})
     return result
 
 
