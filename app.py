@@ -3,20 +3,20 @@ import subprocess
 import uuid
 from threading import Thread
 from time import sleep
-from datetime import datetime
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler, hard_reset_printer
-import pickledb
+import tinydb
+from tinydb import TinyDB, where, Query
+
+db = TinyDB('dbs/db.json')
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
-db = pickledb.load('./dbs/data.db', False)
-meta = pickledb.load('./dbs/meta.db', False)
-wifi = pickledb.load('./dbs/wifi.db', False)
+
 # Start print handler thread
 t = Thread(target=print_handler)
 t.daemon = True
@@ -26,24 +26,41 @@ t.start()
 @app.route("/status", methods=["GET"])
 def check_status():
     res = []
-    data = db.getall()
-    for key in data:
-        role = meta.get(key)['role'] if meta.get(key) and ('role' in meta.get(key).keys()) else "None"
-        typ = meta.get(key)['type'] if meta.get(key) and ('type' in meta.get(key).keys()) else "None"
-        res.append({f'{key}': {'ip': db.get(key),
-                               'is_online': is_online(db.get(key),'9100') if db.get(key) != 'None' else "None",
-                               'role': role, 'type': typ}})
-    return jsonify({'wifi': {'SSID': wifi.get('SSID'), 'PASSWORD': wifi.get('PASSWORD')}, 'printers': res})
+    printers = db.search(where('type') == 'printer')
+    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
+    default_printers_types = [dfp['type'] for dfp in default_printers[0]]
+    default_pritner_macs = [dfp['printer'] for dfp in default_printers[0]]
+    for printer in printers:
+        defs = []
+        for p in default_printers[0]:
+            if p['printer'] == printer['data']['mac']:
+                defs.append(p['type'])
+
+        res.append({'name': printer['data']['name'], 'mac': printer['data']['mac'],
+                    'ip': printer['data']['ip'],
+                    'access': printer['data']['access'], 'type': printer['data']['type'],
+                    'is_online': is_online(printer['data']['ip'], "9100"),
+                    'defualt_for': defs
+                    })
+    wifi = db.search(where('type') == 'credential')[0]['data']
+
+    return jsonify({'types': default_printers_types, 'wifi': {'SSID': wifi['ssid'], 'PASSWORD': wifi['password']},
+                    'printers': res})
 
 
-@app.route("/set_wifi", methods=["POST"])
+@app.route("/set_wifi", methods=["PUT"])
 def set_wifi():
     req = request.json
     if not req['SSID'] or not req['PASSWORD']:
         return app.response_class("SSID or PASSWORD is not exists", 400)
-    wifi.set('SSID', req['SSID'])
-    wifi.set('PASSWORD', req['PASSWORD'])
-    wifi.dump()
+    wifi = db.search(where('type') == 'credential')[0]['data']
+    if wifi:
+        new_wifi = {'ssid': req['SSID'], 'password': req['PASSWORD']}
+        db.update({'type': 'credential', 'data': new_wifi}, where('type') == 'credential')
+    else:
+        new_wifi = {'ssid': req['SSID'], 'password': req['PASSWORD']}
+        db.update({'type': 'credential', 'data': new_wifi}, where('type') == 'credential')
+
     return "Wi-fi credentials set successfully."
 
 
@@ -60,51 +77,73 @@ def get_wifi():
     return jsonify({'ssid': ssid})
 
 
-@app.route("/add-printer", methods=["POST"])
+@app.route("/add_printer", methods=["POST"])
 def add_printer():
     req = request.json
+    printers = db.search(where('type') == 'printer')
+    macs = [printer['data']['mac'] for printer in printers]
+    names = [printer['data']['name'] for printer in printers]
     if not req['mac'] or not req['ip']:
         return app.response_class("Mac address or IP is not exists", 400)
-    if db.get(req['mac']):
-        return app.response_class("Mac address already exists", 400)
-    if db.get(req['mac']):
+    if req['mac'] in macs:
         return app.response_class("Mac address already exists", 400)
     # check role is exists
-    all_metas = meta.getall()
-    for key in all_metas:
-        mt = meta.get(key)
-        if 'role' in mt and mt['role'] == req['role']:
-            return app.response_class("Role already exists", 400)
-    db.set(req['mac'], req['ip'])
-    meta.set(req['mac'], {'role': req['role'], 'type': req['type']})
-    db.dump()
-    meta.dump()
+    if not req['name'] or req['name'] in names:
+        return app.response_class("Name already exists", 400)
+    db.insert({'type': 'printer', 'data': {'name': req['name'], 'mac': req['mac'], 'ip': req['ip'],
+                                           'access': 'admin', 'type': req['type']}})
     return "Printer added successfully."
 
 
-@app.route("/edit-printer/<mac>", methods=["PUT"])
+@app.route("/edit_printer/<mac>", methods=["PUT"])
 def edit_printer(mac):
     req = request.json
-    if not db.get(mac):
+    macs = [printer['data']['mac'] for printer in db.search(where('type') == 'printer')]
+    if not mac in macs:
         return app.response_class("Mac address not found", 404)
     if not req['ip']:
         return app.response_class("IP is not exists", 400)
-    db.set(mac, req['ip'])
-    if req['role']:
-        obj = meta.get(mac)
-        obj['role'] = req['role']
-        meta.set(mac, obj)
-        meta.dump()
-    db.dump()
+    q = Query()
+    printer = db.get(q.data.mac == str(mac))
+    printer['data'].update({'ip': req['ip']})
+    printer['data'].update({'name': req['name']})
+    db.update(printer, q.data.mac == str(mac))
+
+
     return "Printer edited successfully."
+
+
+@app.route("/delete_printer/<mac>", methods=["DELETE"])
+def delete_printer(mac):
+    macs = [printer['data']['mac'] for printer in db.search(where('type') == 'printer')]
+    if not mac in macs:
+        return app.response_class("Mac address not found", 404)
+
+    q = Query()
+    db.remove(q.data.mac == str(mac))
+    # delete from defaults too if exists
+    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
+    default_pritner_macs = [dfp['printer'] for dfp in default_printers[0]]
+    defs = []
+    updating = default_printers[0]
+    for p in default_printers[0]:
+        if p['printer'] == mac:
+            updating.pop(default_pritner_macs.index(mac))
+            default_pritner_macs.pop(default_pritner_macs.index(mac))
+            db.update({'type': 'store', 'data': updating}, where('type') == 'store')
+
+
+    return "Printer removed successfully."
 
 
 @app.route("/connect_wifi/<mac>", methods=["POST"])
 def connect_wifi(mac):
     if not db.get(mac):
         return app.response_class("Mac address not found", 404)
-    connect_to_wifi(mac, wifi, db)
-    return "successfully."
+    credential = db.search(where('type') == 'credential')[0]['data']
+    wifi = {'ssid': credential['ssid'], 'password': credential['password']}
+    connect_to_wifi(mac, wifi)
+    return "Device connected to Wi-Fi successfully."
 
 
 @app.route("/scan", methods=["POST"])
@@ -114,18 +153,26 @@ def scan_printer():
     if q == '1':
         setup = True
 
-
-
-
     private_ip = get_private_ip()
     rng = ".".join(private_ip.split(".")[:3])
-    data = scan(rng, db, meta, setup)
+    data = scan(rng, setup)
 
     return jsonify(data)
 
 
-@app.route("/print", methods=["POST"])
-def print_receipt():
+@app.route("/print/<prt>", methods=["POST"])
+def print_receipt(prt):
+    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
+    default_printers_types = [dfp['type'] for dfp in default_printers[0]]
+    if prt not in default_printers_types:
+        return app.response_class("Printer part not found", 404)
+    try:
+        mac = default_printers[0][default_printers_types.index(prt)]['printer']
+        q = Query()
+        ip = db.get(q.data.mac == str(mac))['data']['ip']
+    except Exception as e:
+        print(e)
+        return app.response_class("Printer part not found", 404)
     if 'imageFile' not in request.files:
         return jsonify({'success': False, 'message': 'No image file found'})
 
@@ -142,7 +189,7 @@ def print_receipt():
         f.flush()
         os.fsync(f.fileno())
     try:
-        res = print_base64(image_path, db)
+        res = print_base64(image_path, ip)
         if res:
             return {'success': True}
         else:
@@ -152,7 +199,7 @@ def print_receipt():
         return {'success': False}
 
 
-@app.route("/check-update", methods=["GET"])
+@app.route("/check_update", methods=["GET"])
 def check_update():
     # Read VERSION file
     with open('VERSION', 'r') as f:
@@ -166,7 +213,7 @@ def check_update():
         return jsonify({'update': True, 'version': out_version})
 
 
-@app.route('/update-project', methods=['POST'])
+@app.route('/update_project', methods=['POST'])
 def update_project():
     repo_url = 'https://github.com/F4RAN/qutline-printer.git'
     os.system(f'git pull {repo_url}')
@@ -187,14 +234,14 @@ def update_project():
 
 @app.route('/setup', methods=['GET'])
 def setup():
-    with open('ui/setup2.html', 'r') as f:
+    with open('ui/setup.html', 'r') as f:
         return f.read()
 
 
-@app.route('/hard-reset/<mac>', methods=['POST'])
+@app.route('/hard_reset/<mac>', methods=['POST'])
 def hard_reset(mac):
     try:
-        hard_reset_printer(mac, db)
+        hard_reset_printer(mac)
         return jsonify({'message': 'Printer reset successfully'})
     except Exception as e:
         print(e)

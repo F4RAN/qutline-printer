@@ -1,14 +1,13 @@
-import errno
-import os
 from time import sleep
-
 from escpos.printer import Network
 import subprocess
 import re
 import requests
 import socket
 import queue
-from threading import Thread
+from tinydb import TinyDB, Query, where
+
+db = TinyDB('dbs/db.json')
 tout = 20
 print_queue = queue.Queue()
 
@@ -34,13 +33,8 @@ def print_handler():
         print_queue.task_done()
 
 
-def print_base64(image_path, db):
+def print_base64(image_path, ip):
     try:  # Connect to the printer
-        data = db.getall()
-        for key in data:
-            if db.get(key) != "None":
-                ip = db.get(key)
-                break
         print_queue.put({
             'image': image_path,
             'ip': ip
@@ -51,14 +45,13 @@ def print_base64(image_path, db):
         return False
 
 
-def scan(rng, db, meta, setup):
+def scan(rng, setup):
     founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
     # Read and parse nmap output
     for line in proc.stdout:
         line = line.decode('utf-8')
-        print(line)
         ip_pattern = r'Host:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
         match = re.search(ip_pattern, line)
@@ -79,12 +72,15 @@ def scan(rng, db, meta, setup):
             print("Checking", ip)
             res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
-            db.set(mac, ip)
-            attr = meta.get(mac) if meta.get(mac) else {}
-            attr['type'] = 'wifi'
-            meta.set(mac, attr)
-            meta.dump()
-            db.dump()
+            # db.set(mac, ip)
+            printers = db.search(where('type') == 'printer')
+            max_num = 1
+            for printer in printers:
+                if printer['data']['name'].find("Printer #"):
+                    max_num = max(max_num, int(printer['data']['name'].split("#")[1]))
+            name = f"Printer #{max_num + 1}"
+            db.insert({'data': {'mac': mac, 'ip': ip, 'type': 'wifi', 'name': name}})
+
         except:
             print("Printer doesn't have Wifi Connection")
             socket.setdefaulttimeout(5)
@@ -111,17 +107,21 @@ def scan(rng, db, meta, setup):
                 if match:
                     mac = match.group()
                     mac = mac.replace("-", ':')
-                    db.set(mac, ip)
-                    attr = meta.get(mac) if meta.get(mac) else {}
-                    attr['type'] = 'lan'
-                    meta.set(mac, attr)
-                    meta.dump()
+                    printers = db.search(where('type') == 'printer')
+                    max_num = 1
+                    for printer in printers:
+                        if printer['data']['name'].find("Printer #"):
+                            max_num = max(max_num, int(printer['data']['name'].split("#")[1]))
+                    name = f"Printer #{max_num + 1}"
+                    db.insert({'data': {'mac': mac, 'ip': ip, 'type': 'wifi', 'name': name}})
+                    q = Query()
+                    conflict_printers = db.get(q.data.ip == str(ip))['data']
 
-                    data = db.getall()
-                    for key in data:
-                        if key != mac and db.get(key) == ip:
-                            db.set(key, "None")
-                    db.dump()
+                    for p in conflict_printers:
+                        if p['mac'] != mac and p['ip'] == ip:
+                            # set None instead of ip
+                            db.update({'data': {'mac': p['mac'], 'ip': "None", 'type': p['type'], 'name': p['name']}}, q.data.mac == str(p['mac']))
+
             except:
                 print("Socket not found")
 
@@ -131,12 +131,12 @@ def scan(rng, db, meta, setup):
             pass
 
     result = []
-    data = db.getall()
-    for key in data:
-        if db.get(key) in founded_ips:
-            result.append({key: db.get(key)})
+    printers = db.search(where('type') == 'printer')
+    for printer in printers:
+        if printer['data']['ip'] in founded_ips:
+            result.append(printer['data'])
         elif not setup:
-            result.append({key: db.get(key)})
+            result.append(printer['data'])
     return result
 
 
@@ -149,6 +149,7 @@ def is_online(ip, port):
     except socket.error as err:
         return False
 
+
 # def is_online(ip):
 #     parameter = '-n'
 #     try:
@@ -160,16 +161,17 @@ def is_online(ip, port):
 #     except:
 #         return False
 
-def connect_to_wifi(mac, wifi, db):
+def connect_to_wifi(mac, wifi):
     headers = {
         'Authorization': 'Basic YWRtaW46YWRtaW4=',
         'Origin': f'http://{db.get(mac)}',
         'Referer': f'http://{db.get(mac)}/wireless_en.html',
 
     }
-    ip = db.get(mac)
-    ssid = wifi.get("SSID")
-    password = wifi.get("PASSWORD")
+    q = Query()
+    ip = db.get(q.data.mac == str(mac))['data']['ip']
+    ssid = wifi["ssid"]
+    password = wifi["password"]
     payload = f'sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=DHCP'
     try:
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
@@ -181,10 +183,12 @@ def connect_to_wifi(mac, wifi, db):
         print("HTTP request to printer to set wifi credentials failed.")
         pass
 
-def hard_reset_printer(mac, db):
+
+def hard_reset_printer(mac):
     # Command : 1f 1b 1f 27 13 14 52 00
     # reset printer
-    ip = db.get(mac)
+    q = Query()
+    ip = db.get(q.data.mac == str(mac))['data']['ip']
     p = Network(ip, port=9100)
     # Open connection
     p.open()
