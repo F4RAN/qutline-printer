@@ -159,10 +159,9 @@ def print_receipt(prt):
     default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
     default_printers_types = [dfp['type'] for dfp in default_printers[0]]
     if prt not in default_printers_types:
-        return app.response_class("Printer part not found", 404)
+        return app.response_class("Printer part not founds", 404)
     try:
         mac = default_printers[0][default_printers_types.index(prt)]['printer']
-        print(mac, default_printers[0], default_printers_types.index(prt))
         q = Query()
         ip = db.get(q.data.mac == str(mac))['data']['ip']
     except Exception as e:
