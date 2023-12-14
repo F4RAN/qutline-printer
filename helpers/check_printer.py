@@ -2,11 +2,8 @@ import socket
 import random
 from time import sleep
 
-counter = 0
 
-
-def is_printer_ready(ip, port):
-    global counter
+def is_printer_ready(ip, port, counter=0):
     counter += 1
     r1 = round(random.uniform(0.5, 2.0), 3)
     sleep(r1)
@@ -14,7 +11,7 @@ def is_printer_ready(ip, port):
     r2 = round(random.uniform(0.5, 2.0), 3)
     sleep(r2)
     if not c1 and counter < 5:
-        return is_printer_ready(ip, port)
+        return is_printer_ready(ip, port, counter)
     if counter >= 5:
         return False
     c2 = check_printer_status(ip, port)
@@ -22,7 +19,7 @@ def is_printer_ready(ip, port):
         return True
     else:
         if counter < 5:
-            return is_printer_ready(ip, port)
+            return is_printer_ready(ip, port, counter)
         else:
             return False
 
