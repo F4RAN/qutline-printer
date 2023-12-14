@@ -10,6 +10,7 @@ def is_printer_ready(ip, port, counter=0):
     c1 = check_printer_status(ip, port)
     r2 = random.randint(500, 5000) / 1000
     sleep(r2)
+    print(r1,r2)
     if not c1 and counter < 5:
         return is_printer_ready(ip, port, counter)
     if counter >= 5:
