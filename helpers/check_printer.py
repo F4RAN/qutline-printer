@@ -5,7 +5,7 @@ from time import sleep
 
 def is_printer_ready(ip, port, counter=0):
     counter += 1
-    r1 = random.randint(500, 5000) / 1000
+    r1 = random.randint(1000, 2000) / 1000
     sleep(r1)
     c1 = check_printer_status(ip, port)
     r2 = random.uniform(0,2) * random.uniform(0,2) + random.uniform(1,2)
