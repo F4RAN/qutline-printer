@@ -24,6 +24,7 @@ def print_base64(image_path, ip):
             p.close()
             return True
         else:
+
             return False
     except Exception as e:
         print(e)
