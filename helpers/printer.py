@@ -7,6 +7,8 @@ import socket
 import queue
 from tinydb import TinyDB, Query, where
 
+from helpers.check_printer import is_printer_ready
+
 db = TinyDB('dbs/db.json')
 tout = 20
 
@@ -16,14 +18,12 @@ tout = 20
 def print_base64(image_path, ip):
     try:  # Connect to the printer
         # Connect to printer
-        printer = Network(ip, port=9100)
-        # Print image
-        printer.open()
-        printer.set(align='center', width=2, height=2)
-        printer.image(image_path)
-        printer.cut()
-        printer.close()
-        return True
+        if is_printer_ready(ip, 9100):
+            p = Network(ip)
+            p.image(image_path)
+            p.cut()
+            p.close()
+            return True
     except Exception as e:
         print(e)
         return False
