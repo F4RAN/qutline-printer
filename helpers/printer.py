@@ -18,16 +18,28 @@ def print_handler():
     while True:
         item = print_queue.get()
         try:
-            if check_printer_status(item['ip'], 9100):
-                printer = Network(item['ip'], port=9100)
-                # Print image
-                printer.open()
-                printer.set(align='center', width=2, height=2)
-                printer.image(item['image'])
-                printer.cut()
-                printer.close()
-            else:
-                print("Printer is busy")
+            c = 0
+            skip = False
+            while check_printer_status(item['ip'], 9100):
+                c += 1
+                if c > tout:
+                    break
+                    skip = True
+                if check_printer_status(item['ip'], 9100):
+                    break
+                else:  # Printer is busy
+                    print("Printer is busy")
+                sleep(1)
+            if skip:
+                continue
+            printer = Network(item['ip'], port=9100)
+            # Print image
+            printer.open()
+            printer.set(align='center', width=2, height=2)
+            printer.image(item['image'])
+            printer.cut()
+            printer.close()
+
 
         except Exception as e:
             print("Printer queue error", e)
@@ -123,7 +135,8 @@ def scan(rng, setup):
                     for p in conflict_printers:
                         if p['mac'] != mac and p['ip'] == ip:
                             # set None instead of ip
-                            db.update({'data': {'mac': p['mac'], 'ip': "None", 'type': p['type'], 'name': p['name']}}, q.data.mac == str(p['mac']))
+                            db.update({'data': {'mac': p['mac'], 'ip': "None", 'type': p['type'], 'name': p['name']}},
+                                      q.data.mac == str(p['mac']))
 
             except:
                 print("Socket not found")

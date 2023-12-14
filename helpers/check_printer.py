@@ -28,7 +28,7 @@ def is_printer_ready(ip, port, counter=0):
 def check_printer_status(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(30)
+        sock.settimeout(2)
         sock.connect((ip, port))
 
         esc = bytes([0x1D])
