@@ -1,14 +1,12 @@
 import os
 import subprocess
 import uuid
-from threading import Thread
 from time import sleep
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
-from helpers.printer import print_base64, scan, is_online, connect_to_wifi, print_handler, hard_reset_printer
-import tinydb
+from helpers.printer import print_base64, scan, is_online, connect_to_wifi, hard_reset_printer
 from tinydb import TinyDB, where, Query
 
 db = TinyDB('dbs/db.json')
@@ -17,10 +15,6 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
-# Start print handler thread
-t = Thread(target=print_handler)
-t.daemon = True
-t.start()
 
 
 @app.route("/status", methods=["GET"])
