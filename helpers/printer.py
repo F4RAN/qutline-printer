@@ -36,13 +36,9 @@ def print_handler():
         print_queue.task_done()
 
 
-def print_base64(image_path, db):
+def print_base64(image_path, ip):
     try:  # Connect to the printer
         data = db.getall()
-        for key in data:
-            if db.get(key) != "None":
-                ip = db.get(key)
-                break
         print_queue.put({
             'image': image_path,
             'ip': ip
