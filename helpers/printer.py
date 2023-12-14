@@ -23,9 +23,10 @@ def print_handler():
             while check_printer_status(item['ip'], 9100):
                 c += 1
                 if c > tout:
-                    break
                     skip = True
+                    break
                 if check_printer_status(item['ip'], 9100):
+                    sleep(3)
                     break
                 else:  # Printer is busy
                     print("Printer is busy")
