@@ -164,9 +164,13 @@ def print_receipt(prt):
         print(prt)
         print(default_printers[0])
         print(default_printers_types)
+        print(default_printers_types.index(prt))
         mac = default_printers[0][default_printers_types.index(prt)]['printer']
-        q = Query()
-        ip = db.get(q.data.mac == str(mac))['data']['ip']
+        printers = db.get(where('type') == 'printer')
+        for printer in printers:
+            if printer['data']['mac'] == mac:
+                ip = printer['data']['ip']
+                break
     except Exception as e:
         print(e)
         return app.response_class("Printer part not found", 404)
