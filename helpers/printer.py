@@ -38,7 +38,6 @@ def print_handler():
 
 def print_base64(image_path, ip):
     try:  # Connect to the printer
-        data = db.getall()
         print_queue.put({
             'image': image_path,
             'ip': ip
