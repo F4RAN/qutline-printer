@@ -17,13 +17,14 @@ tout = 20
 
 def print_base64(image_path, ip):
     try:  # Connect to the printer
-        # Connect to printer
         if is_printer_ready(ip, 9100):
             p = Network(ip)
             p.image(image_path)
             p.cut()
             p.close()
             return True
+        else:
+            return False
     except Exception as e:
         print(e)
         return False
