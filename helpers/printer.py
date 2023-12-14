@@ -11,21 +11,43 @@ from helpers.check_printer import check_printer_status
 
 db = TinyDB('dbs/db.json')
 tout = 20
+print_queue = queue.Queue()
 
 
+def print_handler():
+    while True:
+        item = print_queue.get()
+        try:
+            if check_printer_status(item['ip'], 9100):
+                printer = Network(item['ip'], port=9100)
+                # Print image
+                printer.open()
+                printer.set(align='center', width=2, height=2)
+                printer.image(item['image'])
+                printer.cut()
+                printer.close()
+            else:
+                print("Printer is busy")
+
+        except Exception as e:
+            print("Printer queue error", e)
+        # Handle errors
+
+        print_queue.task_done()
 
 
-def print_base64(image_path, ip):
+def print_base64(image_path, db):
     try:  # Connect to the printer
-        if check_printer_status(ip, 9100):
-            p = Network(ip)
-            p.image(image_path)
-            p.cut()
-            p.close()
-            return True
-        else:
-            print("Printer is not ready")
-            return False
+        data = db.getall()
+        for key in data:
+            if db.get(key) != "None":
+                ip = db.get(key)
+                break
+        print_queue.put({
+            'image': image_path,
+            'ip': ip
+        })
+        return True
     except Exception as e:
         print(e)
         return False

@@ -6,8 +6,13 @@ import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from helpers.network import get_private_ip
-from helpers.printer import print_base64, scan, is_online, connect_to_wifi, hard_reset_printer
+from helpers.printer import print_base64, scan, is_online, connect_to_wifi,print_handler, hard_reset_printer
 from tinydb import TinyDB, where, Query
+from threading import Thread
+# Start print handler thread
+t = Thread(target=print_handler)
+t.daemon = True
+t.start()
 
 db = TinyDB('dbs/db.json')
 
