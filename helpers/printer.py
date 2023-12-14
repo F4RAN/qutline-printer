@@ -17,6 +17,7 @@ print_queue = queue.Queue()
 def print_handler():
     while True:
         item = print_queue.get()
+        print("new item received")
         try:
             c = 0
             skip = False
@@ -26,6 +27,7 @@ def print_handler():
                     skip = True
                     break
                 if check_printer_status(item['ip'], 9100):
+                    print("Printer not busy")
                     sleep(3)
                     break
                 else:  # Printer is busy
