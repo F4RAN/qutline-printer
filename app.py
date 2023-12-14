@@ -161,19 +161,18 @@ def print_receipt(prt):
     if prt not in default_printers_types:
         return app.response_class("Printer part not founds", 404)
     try:
-        print(prt)
-        print(default_printers[0])
-        print(default_printers_types)
-        print(default_printers_types.index(prt))
+        ip = ""
         mac = default_printers[0][default_printers_types.index(prt)]['printer']
-        printers = db.get(where('type') == 'printer')
-        for printer in printers:
-            if printer['data']['mac'] == mac:
-                ip = printer['data']['ip']
-                break
+        printers = db.search(where('type') == 'printer')
+        for p in printers:
+            if p['data']['mac'] == mac:
+                ip = p['data']['ip']
     except Exception as e:
         print(e)
         return app.response_class("Printer part not found", 404)
+    if not ip:
+        return app.response_class("IP part not found", 404)
+
     if 'imageFile' not in request.files:
         return jsonify({'success': False, 'message': 'No image file found'})
 
