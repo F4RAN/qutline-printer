@@ -9,36 +9,20 @@ from tinydb import TinyDB, Query, where
 
 db = TinyDB('dbs/db.json')
 tout = 20
-print_queue = queue.Queue()
 
 
-def print_handler():
-    while True:
-        item = print_queue.get()
-        try:
-            # Get length of image
-            # Connect to printer
-            printer = Network(item['ip'], port=9100)
-            # Print image
-            printer.open()
-            printer.set(align='center', width=2, height=2)
-            printer.image(item['image'])
-            printer.cut()
-            printer.close()
-            sleep(6)
-        except Exception as e:
-            print("Printer queue error", e)
-        # Handle errors
-
-        print_queue.task_done()
 
 
 def print_base64(image_path, ip):
     try:  # Connect to the printer
-        print_queue.put({
-            'image': image_path,
-            'ip': ip
-        })
+        # Connect to printer
+        printer = Network(ip, port=9100)
+        # Print image
+        printer.open()
+        printer.set(align='center', width=2, height=2)
+        printer.image(image_path)
+        printer.cut()
+        printer.close()
         return True
     except Exception as e:
         print(e)
