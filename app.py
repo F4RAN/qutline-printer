@@ -5,6 +5,8 @@ from time import sleep
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
+
+from configs.init import defaults
 from helpers.network import get_private_ip
 from helpers.printer import print_base64, scan, is_online, connect_to_wifi,print_handler, hard_reset_printer
 from tinydb import TinyDB, where, Query
@@ -19,6 +21,50 @@ db = TinyDB('dbs/db.json')
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
+
+@app.route("/delete_default/<mac>/<typ>", methods=["DELETE"])
+def delete_default(mac,typ):
+    stores = db.search(where('type') == 'store')
+    if len(stores) < 1:
+        return app.response_class("Default printer not found", 404)
+    else:
+        for store in stores:
+            for i, dfp in enumerate(store['data']):
+                if dfp['printer'] == mac and dfp['type'] == typ:
+                    del store['data'][i]
+                    db.update(store, where('type') == 'store')
+                    return "Default printer deleted successfully."
+    return app.response_class("Default printer not found", 404)
+
+
+@app.route("/set_default/<mac>", methods=["POST"])
+def set_default(mac):
+    req = request.json
+    if req['type'] not in defaults:
+        return app.response_class("Type not found", 404)
+    printers = db.search(where('type') == 'printer')
+    macs = [printer['data']['mac'] for printer in printers]
+    if not mac in macs:
+        return app.response_class("Mac address not found", 404)
+    stores = db.search(where('type') == 'store')
+    if len(stores) < 1:
+        db.insert({'type': 'store', 'data': [{'type': req['type'], 'printer': mac}]})
+    else:
+        for store in stores:
+            if store['data'][0]['type'] == req['type']:
+                store['data'][0]['printer'] = mac
+                db.update(store, where('type') == 'store')
+                print("here")
+            elif req['type'] not in [dfp['type'] for dfp in store['data']]:
+                print("here2")
+                store['data'].append({'type': req['type'], 'printer': mac})
+                db.update(store, where('type') == 'store')
+    return "Default printer set successfully."
+
+
+@app.route("/get_defaults", methods=["GET"])
+def get_default_options():
+    return defaults
 
 
 
