@@ -4,63 +4,8 @@ import subprocess
 import re
 import requests
 import socket
-import queue
 from tinydb import TinyDB, Query, where
-
-from helpers.check_printer import check_printer_status
-
 db = TinyDB('dbs/db.json')
-tout = 20
-print_queue = queue.Queue()
-
-
-def print_handler():
-    while True:
-        item = print_queue.get()
-        print("new item received")
-        try:
-            c = 0
-            skip = False
-            while not check_printer_status(item['ip'], 9100):
-                c += 1
-                if c > tout:
-                    skip = True
-                    break
-                if check_printer_status(item['ip'], 9100):
-                    print("Printer not busy")
-                    break
-                else:  # Printer is busy
-                    print("Printer is busy")
-                sleep(1)
-            if skip:
-                continue
-            printer = Network(item['ip'], port=9100)
-            # Print image
-            printer.open()
-            printer.set(align='center', width=2, height=2)
-            printer.image(item['image'])
-            printer.cut()
-            printer.close()
-
-
-        except Exception as e:
-            print("Printer queue error", e)
-        # Handle errors
-
-        print_queue.task_done()
-
-
-def print_base64(image_path, ip):
-    try:  # Connect to the printer
-        print_queue.put({
-            'image': image_path,
-            'ip': ip
-        })
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
 
 def scan(rng, setup):
     founded_ips = []

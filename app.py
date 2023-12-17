@@ -5,18 +5,15 @@ from time import sleep
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
-
 from configs.init import defaults
+from configs.define_printer import Printer
 from helpers.network import get_private_ip
-from helpers.printer import print_base64, scan, is_online, connect_to_wifi,print_handler, hard_reset_printer
+from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer
 from tinydb import TinyDB, where, Query
 from threading import Thread
 # Start print handler thread
-t = Thread(target=print_handler)
-t.daemon = True
-t.start()
-
 db = TinyDB('dbs/db.json')
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -225,12 +222,12 @@ def print_receipt(prt):
         return app.response_class("IP part not found", 404)
 
     if 'imageFile' not in request.files:
-        return jsonify({'success': False, 'message': 'No image file found'})
+        return app.response_class("No image file selected", 400)
 
     image_file = request.files['imageFile']
 
     if image_file.filename == '':
-        return jsonify({'success': False, 'message': 'No image file selected'})
+        return app.response_class("No image name selected", 400)
 
     # Save the image file to a desired location
 
@@ -240,11 +237,13 @@ def print_receipt(prt):
         f.flush()
         os.fsync(f.fileno())
     try:
-        res = print_base64(image_path, ip)
+        printer = Printer(mac)
+        res = printer.print(image_path, ip)
         if res:
             return {'success': True}
         else:
-            return {'success': False}
+            return app.response_class("Printer connection problem, go to the Dashboard > Settings > Connected "
+                                      "Devices, and make sure information is true", 400)
     except Exception as e:
         print(e)
         return {'success': False}

@@ -8,9 +8,9 @@ def is_printer_ready(ip, port, counter=0):
     r1 = random.randint(1000, 2000) / 1000
     sleep(r1)
     c1 = check_printer_status(ip, port)
-    r2 = random.uniform(0,2) * random.uniform(0,2) + random.uniform(1,2)
+    r2 = random.uniform(0, 2) * random.uniform(0, 2) + random.uniform(1, 2)
     sleep(r2)
-    print(r1,r2)
+    print(r1, r2)
     if not c1 and counter < 5:
         return is_printer_ready(ip, port, counter)
     if counter >= 5:
@@ -49,3 +49,25 @@ def check_printer_status(ip, port):
         return False
 
     # Wait random time
+
+
+def check_printer_online(ip, port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        sock.connect((ip, port))
+
+        esc = bytes([0x1D])
+        cmd = bytes([0x72])
+        param = bytes([0x01])
+
+        status_cmd = esc + cmd + param
+
+        sock.send(status_cmd)
+        sock.recv(32)
+        sock.close()
+        return True
+    except Exception as e:
+        print(e)
+        if str(e).find("64"):
+            return False
