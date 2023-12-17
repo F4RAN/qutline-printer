@@ -9,7 +9,7 @@ def restart_server():
         print('Trying to run again')
         sleep(5)
         try:
-            os.system('python app.py')
+            os.system('python3 app.py run 2> debug.txt')
             break
         except Exception as e:
             print(e)
