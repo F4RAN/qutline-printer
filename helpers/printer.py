@@ -6,7 +6,7 @@ import requests
 import socket
 from tinydb import TinyDB, Query, where
 db = TinyDB('dbs/db.json')
-
+tout = 20
 def scan(rng, setup):
     founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'

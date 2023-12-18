@@ -10,6 +10,8 @@ from configs.define_printer import Printer
 from helpers.network import get_private_ip
 from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer
 from tinydb import TinyDB, where, Query
+from helpers.lock_empty import run, lock
+run()
 from threading import Thread
 # Start print handler thread
 db = TinyDB('dbs/db.json')
@@ -204,6 +206,12 @@ def scan_printer():
 
 @app.route("/print/<prt>", methods=["POST"])
 def print_receipt(prt):
+    lc = 0
+    while lock.locked():
+        lc += 1
+        sleep(1)
+        if lc > 10:
+            return app.response_class("Maintain mode please wait", 400)
     default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
     default_printers_types = [dfp['type'] for dfp in default_printers[0]]
     if prt not in default_printers_types:
