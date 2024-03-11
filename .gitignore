@@ -1,5 +1,5 @@
 .venv
 __pycache__
-./dbs
+./dbs/*
 debug.txt
 ./images
