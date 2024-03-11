@@ -203,19 +203,17 @@ def scan_printer():
 
     return jsonify(data)
 
-
-@app.route("/print/<prt>", methods=["POST"])
-def print_receipt(prt):
+def verify_printer(prt):
     lc = 0
     while lock.locked():
         lc += 1
         sleep(1)
         if lc > 10:
-            return app.response_class("Maintain mode please wait", 400)
+            return False, app.response_class("Maintain mode please wait", 400)
     default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
     default_printers_types = [dfp['type'] for dfp in default_printers[0]]
     if prt not in default_printers_types:
-        return app.response_class("Printer part not founds", 404)
+        return False, app.response_class("Printer part not founds", 404)
     try:
         ip = ""
         mac = default_printers[0][default_printers_types.index(prt)]['printer']
@@ -224,10 +222,39 @@ def print_receipt(prt):
             if p['data']['mac'] == mac:
                 ip = p['data']['ip']
     except Exception as e:
-        print(e)
-        return app.response_class("Printer part not found", 404)
+            
+        return False, app.response_class("Printer part not found", 404)
     if not ip:
-        return app.response_class("IP part not found", 404)
+        return False, app.response_class("IP part not found", 404)
+    return {'mac':mac,'ip':ip}, False
+
+@app.route("/print_code/tables", methods=["POST"])
+def print_code(prt):
+    req = request.json
+    info, err = verify_printer(prt)
+    if not info:
+        return err
+    ip = info['ip']
+    mac = info['mac']
+    try:
+        printer = Printer(mac)
+        res = printer.print(image_path="",ip=ip,tp="code",code=req['code'],name=req['name'])
+        if res:
+            return {'success': True}
+        else:
+            return app.response_class("Printer connection problem, go to the Dashboard > Settings > Connected "
+                                      "Devices, and make sure information is true", 400)
+    except Exception as e:
+        print(e)
+        return {'success': False}
+
+@app.route("/print/<prt>", methods=["POST"])
+def print_receipt(prt):
+    info, err = verify_printer(prt)
+    if not info:
+        return err
+    ip = info['ip']
+    mac = info['mac']
 
     if 'imageFile' not in request.files:
         return app.response_class("No image file selected", 400)

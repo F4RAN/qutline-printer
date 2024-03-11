@@ -31,14 +31,17 @@ class Printer:
             self.printer_thread.start()
             self.Printers.append(self)
 
-    def print(self, image_path, ip):
+    def print(self, image_path, ip, tp="image", code="", name=""):
         print(self.print_queue)
         try:  # Connect to the printer
             # if not check_printer_online(ip, 9100):
             #     return False
             self.print_queue.put({
                 'image': image_path,
-                'ip': ip
+                'ip': ip,
+                'type':tp,
+                'code':code,
+                'name':name
             })
             return True
         except Exception as e:
@@ -70,9 +73,12 @@ class Printer:
                 printer = Network(item['ip'], port=9100)
                 # Print image
                 printer.open()
-                printer.set(align='center', width=2, height=2)
-                printer.image(item['image'])
-                printer.cut()
+                if item['type'] == 'image':
+                    printer.set(align='center', width=2, height=2)
+                    printer.image(item['image'])
+                    printer.cut()
+                elif item['type'] == 'code':
+                    printer.set(align='center', width=2, height=2)
                 printer.close()
 
 
