@@ -228,7 +228,7 @@ def verify_printer(prt):
         return False, app.response_class("IP part not found", 404)
     return {'mac':mac,'ip':ip}, False
 
-@app.route("/print_code/tables", methods=["POST"])
+@app.route("/print_code/<prt>", methods=["POST"])
 def print_code(prt):
     req = request.json
     info, err = verify_printer(prt)
