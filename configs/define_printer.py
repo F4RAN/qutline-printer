@@ -78,12 +78,12 @@ class Printer:
                     printer.image(item['image'])
                     printer.cut()
                 elif item['type'] == 'code':
-                    printer.set(align='center', width=1, height=1)
+                    printer.set(align='center', width=2, height=2)
                     print(item['code'], "Code is printing")
                     printer.text(item['name'] + " Code is:\n")
                     code = item['code']
                     for char in code:
-                        printer.set(align='center', width=2, height=2, custom_size=True)
+                        printer.set(align='center', width=1, height=1, custom_size=True)
                         printer.text(char + ' ' + ' ')
                     printer.text('\n')
                 printer.close()
