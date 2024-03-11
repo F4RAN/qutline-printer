@@ -81,9 +81,13 @@ class Printer:
                     printer.set(align='center', width=2, height=2, custom_size=True)
                     print(item['code'], "Code is printing")
                     printer.text(item['name'] + " Code is:\n")
+                        # Add margin top by printing blank lines
+                    margin_top = 3  # Adjust the number of blank lines as needed
+                    for _ in range(margin_top):
+                        printer.textln('')
                     code = item['code']
                     for char in code:
-                        printer.set(align='center', width=3, height=3, custom_size=True)
+                        printer.set(align='center', width=2, height=2, custom_size=True)
                         printer.text(char + ' ' + ' ')
                     printer.text('\n')
                     printer.cut()
