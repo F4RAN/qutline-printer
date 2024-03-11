@@ -79,8 +79,8 @@ class Printer:
                     printer.cut()
                 elif item['type'] == 'code':
                     print(item['code'], "Code is printing")
-                    printer.set(align='center', width=2, height=2)
-                    printer.text(item['code'])
+                    printer.text("Hello World\n")
+                    printer.qr("You can readme from your smartphone")
                 printer.close()
 
 
