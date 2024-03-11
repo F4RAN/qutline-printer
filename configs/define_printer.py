@@ -78,9 +78,14 @@ class Printer:
                     printer.image(item['image'])
                     printer.cut()
                 elif item['type'] == 'code':
+                    printer.set(align='center', width=2, height=2)
                     print(item['code'], "Code is printing")
-                    printer.text("Hello World\n")
-                    printer.qr("You can readme from your smartphone")
+                    printer.text(item['name'] + " Code is:\n")
+                    code = item['code']
+                    for char in code:
+                        printer.set(align='center', width=5, height=5)
+                        printer.text(char + ' ' + ' ')
+                    printer.text('\n')
                 printer.close()
 
 
