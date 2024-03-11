@@ -78,7 +78,7 @@ class Printer:
                     printer.image(item['image'])
                     printer.cut()
                 elif item['type'] == 'code':
-                    printer.set(align='center', width=2, height=2)
+                    printer.set(align='center', width=1, height=1)
                     print(item['code'], "Code is printing")
                     printer.text(item['name'] + " Code is:\n")
                     code = item['code']
