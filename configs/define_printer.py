@@ -83,7 +83,8 @@ class Printer:
                     printer.text(item['name'] + " Code is:\n")
                     code = item['code']
                     for char in code:
-                        printer.textln(char + ' ', font=40)
+                        printer.set(align='center', width=7, height=7, custom_size=True)
+                        printer.text(char + ' ' + ' ')
                     printer.text('\n')
                 printer.close()
 
