@@ -14,8 +14,10 @@ from helpers.lock_empty import run, lock
 run()
 from threading import Thread
 # Start print handler thread
-db = TinyDB('dbs/db.json')
+import sqlite3
 
+db = TinyDB('dbs/db.json')
+DATABASE = "dbs/database.sqlite"
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -124,9 +126,14 @@ def get_wifi():
 @app.route("/add_printer", methods=["POST"])
 def add_printer():
     req = request.json
-    printers = db.search(where('type') == 'printer')
-    macs = [printer['data']['mac'] for printer in printers]
-    names = [printer['data']['name'] for printer in printers]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Printer")
+    printers = [dict(row) for row in cursor.fetchall()]
+    print(printers)
+    macs = [printer['mac_addr'] for printer in printers]
+    names = [printer['name'] for printer in printers]
     if not req['mac'] or not req['ip']:
         return app.response_class("Mac address or IP is not exists", 400)
     if req['mac'] in macs:
@@ -134,8 +141,19 @@ def add_printer():
     # check role is exists
     if not req['name'] or req['name'] in names:
         return app.response_class("Name already exists", 400)
-    db.insert({'type': 'printer', 'data': {'name': req['name'], 'mac': req['mac'], 'ip': req['ip'],
-                                           'access': 'admin', 'type': req['type']}})
+    # db.insert({'type': 'printer', 'data': {'name': req['name'], 'mac': req['mac'], 'ip': req['ip'],
+    #                                        'access': 'admin', 'type': req['type']}})
+    typ = 1 if req['type'] == 'wifi' else 0
+    try:
+        cursor.execute("INSERT INTO Printer (name, mac_addr, ip_addr, access_level, connection) VALUES (?, ?, ?, ?, ?)",
+                       (req['name'], req['mac'], req['ip'], 0, typ))
+        conn.commit()
+        conn.close()
+        return "Printer added successfully."
+    except sqlite3.Error as e:
+        conn.rollback()
+        conn.close()
+        return app.response_class(f"An error occurred: {str(e)}", 500)
     return "Printer added successfully."
 
 
