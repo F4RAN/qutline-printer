@@ -11,105 +11,114 @@ from helpers.network import get_private_ip
 from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer
 from tinydb import TinyDB, where, Query
 from helpers.lock_empty import run, lock
+from configs.init import init_db, defaults
 run()
 from threading import Thread
 # Start print handler thread
 import sqlite3
+init_db()
 
-db = TinyDB('dbs/db.json')
 DATABASE = "dbs/database.sqlite"
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
+
+def get_printers(cursor, select=[], where=[]):
+    cursor.execute(f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
+    printers = [dict(row) for row in cursor.fetchall()]
+    return printers
+
+# MIGRATED TO SQLITE
 @app.route("/delete_default/<mac>/<typ>", methods=["DELETE"])
 def delete_default(mac,typ):
-    stores = db.search(where('type') == 'store')
-    if len(stores) < 1:
-        return app.response_class("Default printer not found", 404)
-    else:
-        for store in stores:
-            for i, dfp in enumerate(store['data']):
-                if dfp['printer'] == mac and dfp['type'] == typ:
-                    del store['data'][i]
-                    db.update(store, where('type') == 'store')
-                    return "Default printer deleted successfully."
-    return app.response_class("Default printer not found", 404)
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    if len(printers) == 0:
+        return app.response_class("Printer with this mac not found.")
+    printer = printers[0]
+    # check job exists
+    job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{typ}'").fetchone()
+    if not job:
+        return app.response_class("Job with this type not found", 404)
+    
+    cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{typ}'")
+    conn.commit()
+    return "Default printer removed successfully."
 
-
+# MIGRATED TO SQLITE
 @app.route("/set_default/<mac>", methods=["POST"])
 def set_default(mac):
     req = request.json
     if req['type'] not in defaults:
         return app.response_class("Type not found", 404)
-    printers = db.search(where('type') == 'printer')
-    macs = [printer['data']['mac'] for printer in printers]
-    if not mac in macs:
-        return app.response_class("Mac address not found", 404)
-    stores = db.search(where('type') == 'store')
-    if len(stores) < 1:
-        db.insert({'type': 'store', 'data': [{'type': req['type'], 'printer': mac}]})
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    jobs = cursor.execute(f"SELECT * FROM Job WHERE printer_id = (SELECT id FROM Printer WHERE mac_addr = '{mac}')").fetchall()
+    if req['type'] in [job['type'] for job in jobs]:
+        return app.response_class("This printer assigned for this job before", 400)
     else:
-        for store in stores:
-            if store['data'][0]['type'] == req['type']:
-                store['data'][0]['printer'] = mac
-                db.update(store, where('type') == 'store')
-                print("here")
-            elif req['type'] not in [dfp['type'] for dfp in store['data']]:
-                print("here2")
-                store['data'].append({'type': req['type'], 'printer': mac})
-                db.update(store, where('type') == 'store')
+        # check printer exists
+        printer = cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'").fetchone()
+        if not printer:
+            return app.response_class("Printer with this mac not found", 404)
+        cursor.execute(f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{req['type']}')")
+        conn.commit()
+
+
     return "Default printer set successfully."
 
-
+# MIGRATED TO SQLITE
 @app.route("/get_defaults", methods=["GET"])
 def get_default_options():
     return defaults
 
 
-
+# MIGRATED TO SQLITE
 @app.route("/status", methods=["GET"])
 def check_status():
     res = []
-    printers = db.search(where('type') == 'printer')
-    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
-    default_printers_types = [dfp['type'] for dfp in default_printers[0]]
-    default_pritner_macs = [dfp['printer'] for dfp in default_printers[0]]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor)
     for printer in printers:
-        defs = []
-        for p in default_printers[0]:
-            if p['printer'] == printer['data']['mac']:
-                defs.append(p['type'])
+        cursor.execute(f"SELECT type FROM Job WHERE printer_id = {printer['id']}")
+        jobs = [j['type'] for j in cursor.fetchall()]
 
-        res.append({'name': printer['data']['name'], 'mac': printer['data']['mac'],
-                    'ip': printer['data']['ip'],
-                    'access': printer['data']['access'], 'type': printer['data']['type'],
-                    'is_online': is_online(printer['data']['ip'], "9100"),
-                    'defualt_for': defs
+        res.append({'name': printer['name'], 'mac': printer['mac_addr'],
+                    'ip': printer['ip_addr'],
+                    'access': printer['access_level'], 'type': printer['connection'],
+                    'is_online': is_online(printer['ip_addr'], "9100"),
+                    'defualt_for': jobs
                     })
-    wifi = db.search(where('type') == 'credential')[0]['data']
-
-    return jsonify({'types': default_printers_types, 'wifi': {'SSID': wifi['ssid'], 'PASSWORD': wifi['password']},
+    wifi = cursor.execute("SELECT * FROM WifiCredential").fetchone()
+    conn.close()
+    
+    return jsonify({'types': defaults, 'wifi': {'SSID': wifi['ssid'], 'PASSWORD': wifi['password']},
                     'printers': res})
 
-
+# MIGRATED TO SQLITE
 @app.route("/set_wifi", methods=["PUT"])
 def set_wifi():
     req = request.json
     if not req['SSID'] or not req['PASSWORD']:
         return app.response_class("SSID or PASSWORD is not exists", 400)
-    wifi = db.search(where('type') == 'credential')[0]['data']
-    if wifi:
-        new_wifi = {'ssid': req['SSID'], 'password': req['PASSWORD']}
-        db.update({'type': 'credential', 'data': new_wifi}, where('type') == 'credential')
-    else:
-        new_wifi = {'ssid': req['SSID'], 'password': req['PASSWORD']}
-        db.update({'type': 'credential', 'data': new_wifi}, where('type') == 'credential')
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM WifiCredential")
+    cursor.execute("INSERT INTO WifiCredential (ssid, password) VALUES (?, ?)", (req['SSID'], req['PASSWORD']))
+    conn.commit()
+    conn.close()
 
     return "Wi-fi credentials set successfully."
 
-
+# MIGRATED TO SQLITE
 @app.route("/get_wifi", methods=["GET"])
 def get_wifi():
     # Check wifi name in termux
@@ -123,15 +132,14 @@ def get_wifi():
     return jsonify({'ssid': ssid})
 
 
+# MIGRATED TO SQLITE
 @app.route("/add_printer", methods=["POST"])
 def add_printer():
     req = request.json
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Printer")
-    printers = [dict(row) for row in cursor.fetchall()]
-    print(printers)
+    printers = get_printers(cursor)
     macs = [printer['mac_addr'] for printer in printers]
     names = [printer['name'] for printer in printers]
     if not req['mac'] or not req['ip']:
@@ -156,69 +164,93 @@ def add_printer():
         return app.response_class(f"An error occurred: {str(e)}", 500)
     return "Printer added successfully."
 
-
+# MIGRATED TO SQLITE
 @app.route("/edit_printer/<mac>", methods=["PUT"])
 def edit_printer(mac):
     req = request.json
-    macs = [printer['data']['mac'] for printer in db.search(where('type') == 'printer')]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor)
+    macs = [printer['mac_addr'] for printer in printers]
     if not mac in macs:
         return app.response_class("Mac address not found", 404)
     if not req['ip']:
         return app.response_class("IP is not exists", 400)
     q = Query()
-    printer = db.get(q.data.mac == str(mac))
-    printer['data'].update({'ip': req['ip']})
-    printer['data'].update({'name': req['name']})
-    db.update(printer, q.data.mac == str(mac))
+    cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'")
+    printer = cursor.fetchone()
+    # Update the fields
+    update_fields = []
+    
+    if req.get('ip'):
+        update_fields.append(f"ip_addr = '{req['ip']}'")
+    
+    if req.get('name'):
+        update_fields.append(f"name = '{req['name']}'")
+    
+    if update_fields:
+        update_query = f"UPDATE Printer SET {', '.join(update_fields)} WHERE mac_addr = '{mac}'"
+        cursor.execute(update_query)
+        conn.commit()
 
 
     return "Printer edited successfully."
 
-
+# MIGRATED TO SQLITE
 @app.route("/delete_printer/<mac>", methods=["DELETE"])
 def delete_printer(mac):
-    macs = [printer['data']['mac'] for printer in db.search(where('type') == 'printer')]
-    if not mac in macs:
-        return app.response_class("Mac address not found", 404)
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    if len(printers) == 0:
+        return app.response_class("Printer with this mac not found.")
+    
+    printer = printers[0]
+    # Remove relations in Job Table
+    cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']}")
+    # Remove from sqlite
+    cursor.execute(f"DELETE FROM Printer WHERE mac_addr = '{mac}'")
+    
+    conn.commit()
+    conn.close()
+    
+    return "Printer and all relations removed successfully."
 
-    q = Query()
-    db.remove(q.data.mac == str(mac))
-    # delete from defaults too if exists
-    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
-    default_pritner_macs = [dfp['printer'] for dfp in default_printers[0]]
-    defs = []
-    updating = default_printers[0]
-    for p in default_printers[0]:
-        if p['printer'] == mac:
-            updating.pop(default_pritner_macs.index(mac))
-            default_pritner_macs.pop(default_pritner_macs.index(mac))
-            db.update({'type': 'store', 'data': updating}, where('type') == 'store')
-
-
-    return "Printer removed successfully."
-
-
+# HERE
 @app.route("/connect_wifi/<mac>", methods=["POST"])
 def connect_wifi(mac):
-    if not db.get(mac):
-        return app.response_class("Mac address not found", 404)
-    credential = db.search(where('type') == 'credential')[0]['data']
+    # if not db.get(mac):
+    #     return app.response_class("Mac address not found", 404)
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    if len(printers) == 0:
+        return app.response_class("Printer with this mac not found.")
+    ip = cursor.execute(f"SELECT ip_addr FROM Printer WHERE mac_addr = '{mac}'").fetchone()['ip_addr']
+    credential = cursor.execute("SELECT * FROM WifiCredential").fetchone()
     wifi = {'ssid': credential['ssid'], 'password': credential['password']}
-    connect_to_wifi(mac, wifi)
+    connect_to_wifi(ip, mac, wifi)
+    conn.close()
     return "Device connected to Wi-Fi successfully."
 
 
 @app.route("/scan", methods=["POST"])
 def scan_printer():
     setup = False
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
     q = request.args.get('setup')
     if q == '1':
         setup = True
 
     private_ip = get_private_ip()
     rng = ".".join(private_ip.split(".")[:3])
-    data = scan(rng, setup)
-
+    data = scan(rng, setup, cursor)
+    conn.close()
     return jsonify(data)
 
 def verify_printer(prt):
@@ -345,7 +377,13 @@ def setup():
 @app.route('/hard_reset/<mac>', methods=['POST'])
 def hard_reset(mac):
     try:
-        hard_reset_printer(mac)
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        printer = cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'").fetchone()
+        if not printer:
+            return app.response_class("Printer with this mac not found", 404)
+        hard_reset_printer(printer['ip'], mac)
         return jsonify({'message': 'Printer reset successfully'})
     except Exception as e:
         print(e)

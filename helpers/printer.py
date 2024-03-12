@@ -5,9 +5,14 @@ import re
 import requests
 import socket
 from tinydb import TinyDB, Query, where
-db = TinyDB('dbs/db.json')
 tout = 20
-def scan(rng, setup):
+
+def get_printers(cursor, select=[], where=[]):
+    cursor.execute(f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
+    printers = [dict(row) for row in cursor.fetchall()]
+    return printers
+
+def scan(rng, setup, cursor):
     founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'
     proc = subprocess.Popen(nmap_args, shell=True, stdout=subprocess.PIPE)
@@ -34,15 +39,14 @@ def scan(rng, setup):
             print("Checking", ip)
             res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
-            # db.set(mac, ip)
-            printers = db.search(where('type') == 'printer')
+            printers = get_printers(cursor)
             max_num = 1
             for printer in printers:
-                if printer['data']['name'].find("Printer #"):
-                    max_num = max(max_num, int(printer['data']['name'].split("#")[1]))
+                if printer['name'].find("Printer #"):
+                    max_num = max(max_num, int(printer['name'].split("#")[1]))
             name = f"Printer #{max_num + 1}"
-            db.insert({'data': {'mac': mac, 'ip': ip, 'type': 'wifi', 'name': name}})
-
+            cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 1, '{mac}', '{ip}', 0)")
+            cursor.commit()
         except:
             print("Printer doesn't have Wifi Connection")
             socket.setdefaulttimeout(5)
@@ -69,21 +73,21 @@ def scan(rng, setup):
                 if match:
                     mac = match.group()
                     mac = mac.replace("-", ':')
-                    printers = db.search(where('type') == 'printer')
+                    printers = get_printers(cursor)
                     max_num = 1
                     for printer in printers:
-                        if printer['data']['name'].find("Printer #"):
-                            max_num = max(max_num, int(printer['data']['name'].split("#")[1]))
+                        if printer['name'].find("Printer #"):
+                            max_num = max(max_num, int(printer['name'].split("#")[1]))
                     name = f"Printer #{max_num + 1}"
-                    db.insert({'data': {'mac': mac, 'ip': ip, 'type': 'wifi', 'name': name}})
-                    q = Query()
-                    conflict_printers = db.get(q.data.ip == str(ip))['data']
+                    cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 1, '{mac}', '{ip}', 0)")
+                    cursor.commit()
+                    conflict_printers = get_printers(cursor, select=['mac_addr', 'ip_addr', 'name'], where=[f"ip_addr = '{ip}'"])
 
                     for p in conflict_printers:
-                        if p['mac'] != mac and p['ip'] == ip:
+                        if p['mac_addr'] != mac and p['ip_addr'] == ip:
                             # set None instead of ip
-                            db.update({'data': {'mac': p['mac'], 'ip': "None", 'type': p['type'], 'name': p['name']}},
-                                      q.data.mac == str(p['mac']))
+                            cursor.execute(f"UPDATE Printer SET ip_addr = 'None' WHERE mac_addr = '{p['mac_addr']}'")
+                            cursor.commit()
 
             except:
                 print("Socket not found")
@@ -94,12 +98,12 @@ def scan(rng, setup):
             pass
 
     result = []
-    printers = db.search(where('type') == 'printer')
+    printers = get_printers(cursor)
     for printer in printers:
-        if printer['data']['ip'] in founded_ips:
-            result.append(printer['data'])
+        if printer['ip_addr'] in founded_ips:
+            result.append(dict(printer))
         elif not setup:
-            result.append(printer['data'])
+            result.append(dict(printer))
     return result
 
 
@@ -124,15 +128,13 @@ def is_online(ip, port):
 #     except:
 #         return False
 
-def connect_to_wifi(mac, wifi):
+def connect_to_wifi(ip, mac, wifi):
     headers = {
         'Authorization': 'Basic YWRtaW46YWRtaW4=',
-        'Origin': f'http://{db.get(mac)}',
-        'Referer': f'http://{db.get(mac)}/wireless_en.html',
+        'Origin': f'http://{ip}',
+        'Referer': f'http://{ip}/wireless_en.html',
 
     }
-    q = Query()
-    ip = db.get(q.data.mac == str(mac))['data']['ip']
     ssid = wifi["ssid"]
     password = wifi["password"]
     payload = f'sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=DHCP'
@@ -147,11 +149,10 @@ def connect_to_wifi(mac, wifi):
         pass
 
 
-def hard_reset_printer(mac):
+def hard_reset_printer(ip, mac):
     # Command : 1f 1b 1f 27 13 14 52 00
     # reset printer
-    q = Query()
-    ip = db.get(q.data.mac == str(mac))['data']['ip']
+    ip = ip
     p = Network(ip, port=9100)
     # Open connection
     p.open()

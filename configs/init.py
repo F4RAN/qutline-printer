@@ -30,7 +30,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS Job (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 type INTEGER,
-                printer_id INTEGER,
+                printer_id INTEGER NOT NULL,
                 FOREIGN KEY (printer_id) REFERENCES Printer (id)
             )
         ''')
@@ -49,5 +49,3 @@ def init_db():
         conn.close()
     else:
         print("The database file already exists.")
-
-init_db()
