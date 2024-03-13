@@ -46,7 +46,7 @@ def scan(rng, setup, cursor):
                     max_num = max(max_num, int(printer['name'].split("#")[1]))
             name = f"Printer #{max_num + 1}"
             cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 1, '{mac}', '{ip}', 0)")
-            cursor.commit()
+            
         except:
             print("Printer doesn't have Wifi Connection")
             socket.setdefaulttimeout(5)
@@ -80,14 +80,14 @@ def scan(rng, setup, cursor):
                             max_num = max(max_num, int(printer['name'].split("#")[1]))
                     name = f"Printer #{max_num + 1}"
                     cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 1, '{mac}', '{ip}', 0)")
-                    cursor.commit()
+                    
                     conflict_printers = get_printers(cursor, select=['mac_addr', 'ip_addr', 'name'], where=[f"ip_addr = '{ip}'"])
 
                     for p in conflict_printers:
                         if p['mac_addr'] != mac and p['ip_addr'] == ip:
                             # set None instead of ip
                             cursor.execute(f"UPDATE Printer SET ip_addr = 'None' WHERE mac_addr = '{p['mac_addr']}'")
-                            cursor.commit()
+                            
 
             except:
                 print("Socket not found")

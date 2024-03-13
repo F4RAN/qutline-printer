@@ -272,9 +272,9 @@ def scan_printer():
     private_ip = get_private_ip()
     rng = ".".join(private_ip.split(".")[:3])
     data = scan(rng, setup, cursor)
-    cursor.commit()
+    conn.commit()
     conn.close()
-    print(get_printers(cursor))
+    print(get_printers)
     return jsonify(data)
 
 def verify_printer(prt):
