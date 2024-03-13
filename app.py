@@ -66,7 +66,8 @@ def set_default(mac):
         "tables": 2
     }
 
-    jobs = cursor.execute(f"SELECT * FROM Job WHERE printer_id = (SELECT id FROM Printer WHERE mac_addr = '{mac}')").fetchall()
+    jobs = cursor.execute(f"SELECT * FROM Job").fetchall()
+    print(jobs,[job['type'] for job in jobs])
     if t[req['type']] in [job['type'] for job in jobs]:
         return app.response_class("This printer assigned for this job before", 400)
     else:
