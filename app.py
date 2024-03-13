@@ -41,7 +41,12 @@ def delete_default(mac,typ):
         return app.response_class("Printer with this mac not found.")
     printer = printers[0]
     # check job exists
-    job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{typ}'").fetchone()
+    t = {
+        "orders": 0,
+        "receipts": 1,
+        "tables": 2
+    }
+    job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
     if not job:
         return app.response_class("Job with this type not found", 404)
     
@@ -67,7 +72,6 @@ def set_default(mac):
     }
 
     jobs = cursor.execute(f"SELECT * FROM Job").fetchall()
-    print(jobs,[job['type'] for job in jobs], req['type'], t[req['type']])
     if t[req['type']] in [job['type'] for job in jobs]:
         return app.response_class("This printer assigned for this job before", 400)
     else:
