@@ -74,7 +74,7 @@ def set_default(mac):
         printer = cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'").fetchone()
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
-        cursor.execute(f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{req['type']}')")
+        cursor.execute(f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{t[req['type']]}')")
         conn.commit()
 
 
