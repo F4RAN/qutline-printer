@@ -67,7 +67,7 @@ def set_default(mac):
     }
 
     jobs = cursor.execute(f"SELECT * FROM Job").fetchall()
-    print(jobs,[job['type'] for job in jobs])
+    print(jobs,[job['type'] for job in jobs], req['type'], t[req['type']])
     if t[req['type']] in [job['type'] for job in jobs]:
         return app.response_class("This printer assigned for this job before", 400)
     else:
