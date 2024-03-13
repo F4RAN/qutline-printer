@@ -117,6 +117,8 @@ def check_status():
                     'defualt_for': jobs
                     })
     wifi = cursor.execute("SELECT * FROM WifiCredential").fetchone()
+    if not wifi:
+        wifi = {'ssid': '', 'password': ''}
     conn.close()
     
     return jsonify({'types': defaults, 'wifi': {'SSID': wifi['ssid'], 'PASSWORD': wifi['password']},
