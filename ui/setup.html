@@ -191,6 +191,7 @@
       <p>You must connect to the Printer WiFi.</p>
       <p>Printer WiFi name: WiFi Printer</p>
       <p>Password: 012345678</p>
+      <p v-if="err">{{err}}</p>
       <button @click="nextStep">Done, Go Next Step</button>
     </div>
     <div v-if="step == 3">
@@ -233,7 +234,8 @@
         printerIp: '',
         loading: false,
         approve: false,
-        showPassword: false
+        showPassword: false,
+        err:"",
       };
     },
     mounted() {
@@ -379,6 +381,7 @@
             this.step = 2
             this.loading = false
             console.error('Error scanning printers:', error);
+            this.err = error.message ? error.message : error
             toast.error("Error:", error)
 
           });
