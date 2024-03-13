@@ -280,17 +280,30 @@ def verify_printer(prt):
         sleep(1)
         if lc > 10:
             return False, app.response_class("Maintain mode please wait", 400)
-    default_printers = [st_part['data'] for st_part in db.search(where('type') == 'store')]
-    default_printers_types = [dfp['type'] for dfp in default_printers[0]]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    types = cursor.execute("SELECT type FROM Job").fetchall()
+    t1 = {
+        0: "orders",
+        1: "receipts",
+        2: "tables"
+    }
+    default_printers_types = [t1[ty['type']] for ty in types]
+    
     if prt not in default_printers_types:
         return False, app.response_class("Printer part not founds", 404)
     try:
-        ip = ""
-        mac = default_printers[0][default_printers_types.index(prt)]['printer']
-        printers = db.search(where('type') == 'printer')
-        for p in printers:
-            if p['data']['mac'] == mac:
-                ip = p['data']['ip']
+        t2 = {
+            "orders": 0,
+            "receipts": 1,
+            "tables": 2
+        }
+        addrs = cursor.execute(f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '{t2[prt]}')").fetchone()
+        mac, ip = addrs['mac_addr'], addrs['ip_addr']
     except Exception as e:
             
         return False, app.response_class("Printer part not found", 404)
