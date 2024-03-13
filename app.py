@@ -83,6 +83,7 @@ def set_default(mac):
             return app.response_class("Printer with this mac not found", 404)
         cursor.execute(f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{t[req['type']]}')")
         conn.commit()
+    conn.close()
 
 
     return "Default printer set successfully."
@@ -284,9 +285,6 @@ def verify_printer(prt):
         sleep(1)
         if lc > 10:
             return False, app.response_class("Maintain mode please wait", 400)
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
