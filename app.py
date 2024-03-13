@@ -113,7 +113,7 @@ def check_status():
 
         res.append({'name': printer['name'], 'mac': printer['mac_addr'],
                     'ip': printer['ip_addr'],
-                    'access': printer['access_level'], 'type': printer['connection'],
+                    'access': printer['access_level'], 'type': 'wifi' if printer['connection'] == 1 else 'lan',
                     'is_online': is_online(printer['ip_addr'], "9100"),
                     'defualt_for': jobs
                     })
@@ -228,9 +228,10 @@ def delete_printer(mac):
     cursor = conn.cursor()
     printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
-        return app.response_class("Printer with this mac not found.")
+        return app.response_class("Printer with this mac not found.", 404)
     
     printer = printers[0]
+    print(printer['id'],mac,printer['mac_addr'])
     # Remove relations in Job Table
     cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']}")
     # Remove from sqlite
