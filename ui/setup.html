@@ -360,17 +360,15 @@
             // For demo purposes, use hardcoded printer details
             let printer = ''
             let found = false
-            data.map(d => {
-              if (Object.values(d)[0] != "None") {
-                if (found) {
-                  console.log("More than one printer found")
-                  toast.info("You don't connected to the printer Wi-Fi because we found more than one printer on network :)")
+            for(let i = 0; i < data.length; i++){
+                if(found){
+                  toast.warn("There are more than one printer connected to the same network, Please make sure you connected to the right printer")
+                  break
                 }
+                this.printerMac = data[i].mac
+                this.printerIp = data[i].ip
                 found = true
-                this.printerMac = Object.keys(d)[0];
-                this.printerIp = Object.values(d)[0];
-              }
-            })
+            }
             if(!found){
               this.step = 2
               toast.info("Please make sure you connected to the printer Wi-Fi and not have a VPN Connection")
