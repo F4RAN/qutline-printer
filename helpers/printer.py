@@ -40,7 +40,7 @@ def scan(rng, setup, cursor):
             res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
             printers = get_printers(cursor)
-            max_num = 1
+            max_num = 0
             for printer in printers:
                 if printer['name'].find("Printer #"):
                     max_num = max(max_num, int(printer['name'].split("#")[1]))
@@ -79,7 +79,7 @@ def scan(rng, setup, cursor):
                     mac = match.group()
                     mac = mac.replace("-", ':')
                     printers = get_printers(cursor)
-                    max_num = 1
+                    max_num = 0
                     for printer in printers:
                         if printer['name'].find("Printer #"):
                             max_num = max(max_num, int(printer['name'].split("#")[1]))
