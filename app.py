@@ -46,6 +46,7 @@ def delete_default(mac,typ):
         "receipts": 1,
         "tables": 2
     }
+    print(t[typ], typ, printer['id'])
     job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
     if not job:
         return app.response_class("Job with this type not found", 404)
