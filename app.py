@@ -58,8 +58,16 @@ def set_default(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
+    # type: 0: Orders, 1: Receipts, 2: Tables
+    # convert req['type'] to int
+    t = {
+        "orders": 0,
+        "receipts": 1,
+        "tables": 2
+    }
+
     jobs = cursor.execute(f"SELECT * FROM Job WHERE printer_id = (SELECT id FROM Printer WHERE mac_addr = '{mac}')").fetchall()
-    if req['type'] in [job['type'] for job in jobs]:
+    if t[req['type']] in [job['type'] for job in jobs]:
         return app.response_class("This printer assigned for this job before", 400)
     else:
         # check printer exists

@@ -15,6 +15,11 @@ if ! command -v nmap &> /dev/null; then
   pkg install -y nmap
 fi
 
+if ! command -v nmap &> /dev/null; then
+  echo "sqlite3 is not installed. Installing nmap ..."
+  pkg install -y sqlite
+fi
+
 if ! command -v git &> /dev/null; then
   echo "git is not installed. Installing git ..."
   pkg install -y git
