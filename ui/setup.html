@@ -365,8 +365,8 @@
                   toast.warn("There are more than one printer connected to the same network, Please make sure you connected to the right printer")
                   break
                 }
-                this.printerMac = data[i].mac
-                this.printerIp = data[i].ip
+                this.printerMac = data[i].mac_addr
+                this.printerIp = data[i].ip_addr
                 found = true
             }
             if(!found){
