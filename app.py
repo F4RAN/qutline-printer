@@ -51,7 +51,7 @@ def delete_default(mac,typ):
     if not job:
         return app.response_class("Job with this type not found", 404)
     
-    cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{typ}'")
+    cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'")
     conn.commit()
     return "Default printer removed successfully."
 
