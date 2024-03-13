@@ -100,9 +100,14 @@ def check_status():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     printers = get_printers(cursor)
+    t = {
+        0: "orders",
+        1: "receipts",
+        2: "tables"
+    }
     for printer in printers:
         cursor.execute(f"SELECT type FROM Job WHERE printer_id = {printer['id']}")
-        jobs = [j['type'] for j in cursor.fetchall()]
+        jobs = [t[j['type']] for j in cursor.fetchall()]
 
         res.append({'name': printer['name'], 'mac': printer['mac_addr'],
                     'ip': printer['ip_addr'],
