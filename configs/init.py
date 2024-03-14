@@ -21,6 +21,7 @@ def init_db():
                 mac_addr TEXT,
                 ip_addr TEXT,
                 access_level INTEGER,
+                is_static_ip BOOLEAN,
                 created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
