@@ -25,10 +25,35 @@ CORS(app, resources={r"/*": {
     "origins": ["https://dev.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
 
+
+
 def get_printers(cursor, select=[], where=[]):
     cursor.execute(f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
     printers = [dict(row) for row in cursor.fetchall()]
     return printers
+
+
+@app.route("/change_dhcp/<mac>", methods=["PUT"])
+def change_dhcp(mac):
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    if len(printers) == 0:
+        return app.response_class("Printer with this mac not found.")
+    printer = printers[0]
+    if not printer['is_static_ip']:
+        set_printer_ip_static(printer['ip_addr'])
+        cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
+        conn.commit()
+        conn.close()
+    elif printer['is_static_ip']:
+        set_printer_ip_dynamic(printer['ip_addr'])
+        cursor.execute(f"UPDATE Printer SET is_static_ip = 0 WHERE mac_addr = '{mac}'")
+        conn.commit()
+        conn.close()
+    
+    return "Printer DHCP changed successfully."
 
 # MIGRATED TO SQLITE
 @app.route("/delete_default/<mac>/<typ>", methods=["DELETE"])
@@ -112,7 +137,7 @@ def check_status():
         jobs = [t[j['type']] for j in cursor.fetchall()]
 
         res.append({'name': printer['name'], 'mac': printer['mac_addr'],
-                    'ip': printer['ip_addr'],
+                    'ip': printer['ip_addr'], 'is_static_ip': printer['is_static_ip'],
                     'access': printer['access_level'], 'type': 'wifi' if printer['connection'] == 1 else 'lan',
                     'is_online': is_online(printer['ip_addr'], "9100"),
                     'defualt_for': jobs
