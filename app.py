@@ -38,7 +38,7 @@ def change_dhcp(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr','id', 'is_static_ip'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
     printer = printers[0]
