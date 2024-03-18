@@ -50,7 +50,7 @@ def scan(rng, setup, cursor):
             if len(check) != 0:
                 cursor.execute(f"UPDATE Printer SET ip_addr = '{ip}' WHERE mac_addr = '{mac}'")
             else:
-                cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 1, '{mac}', '{ip}', 0)")
+                cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 1, '{mac}', '{ip}', 0, 1)")
             
         except:
             print("Printer doesn't have Wifi Connection")
@@ -88,7 +88,7 @@ def scan(rng, setup, cursor):
                     if len(check) != 0:
                         cursor.execute(f"UPDATE Printer SET ip_addr = '{ip}', connection = 0 WHERE mac_addr = '{mac}'")
                     else:
-                        cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level) VALUES ('{name}', 0, '{mac}', '{ip}', 0)")
+                        cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 0, '{mac}', '{ip}', 0, 0)")
                     
                     conflict_printers = get_printers(cursor, select=['mac_addr', 'ip_addr', 'name'], where=[f"ip_addr = '{ip}'"])
 
