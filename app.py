@@ -8,7 +8,7 @@ from flask_cors import CORS
 from configs.init import defaults
 from configs.define_printer import Printer
 from helpers.network import get_private_ip
-from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer, set_printer_ip_dynamic, set_printer_ip_static
+from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer, set_printer_ip_dynamic, set_printer_ip_static, set_lan_dhcp
 from tinydb import TinyDB, where, Query
 from helpers.lock_empty import run, lock
 from configs.init import init_db, defaults
