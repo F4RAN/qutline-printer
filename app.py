@@ -38,20 +38,43 @@ def change_dhcp(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr', 'ip_addr' ,'id', 'is_static_ip'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr', 'ip_addr' ,'id', 'is_static_ip','connection'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
     printer = printers[0]
-    if not printer['is_static_ip']:
-        set_printer_ip_static(printer['ip_addr'])
-        cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
-        conn.commit()
-        conn.close()
-    elif printer['is_static_ip']:
-        set_printer_ip_dynamic(printer['ip_addr'])
-        cursor.execute(f"UPDATE Printer SET is_static_ip = 0 WHERE mac_addr = '{mac}'")
-        conn.commit()
-        conn.close()
+    # Wifi
+    if printer['connection'] == 1:
+        if not printer['is_static_ip']:
+            res = set_printer_ip_static(printer['ip_addr'])
+            if not res:
+                return app.response_class("Problem occured", 400)
+            cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
+            conn.commit()
+            conn.close()
+        elif printer['is_static_ip']:
+            res = set_printer_ip_dynamic(printer['ip_addr'])
+            if not res:
+                return app.response_class("Problem occured", 400)
+            cursor.execute(f"UPDATE Printer SET is_static_ip = 0 WHERE mac_addr = '{mac}'")
+            conn.commit()
+            conn.close()
+    # LAN
+    if printer['connection'] == 0:
+        if not printer['is_static_ip']:
+            res = set_lan_dhcp(printer['ip_addr'],type='static')
+            if not res:
+                    return app.response_class("Problem occured", 400)
+            cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
+            conn.commit()
+            conn.close()
+        elif printer['is_static_ip']:
+            res = set_lan_dhcp(printer['ip_addr'],type='dynamic')
+            if not res:
+                    return app.response_class("Problem occured", 400)
+            cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
+            conn.commit()
+            conn.close()
+        
     
     return "Printer DHCP changed successfully."
 
