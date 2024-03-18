@@ -23,7 +23,7 @@ def set_printer_ip_static():
         print(e)
 
 def set_printer_ip_dynamic():
-    ip = "192.168.1.159"
+    ip = "192.168.1.155"
     headers = {
         'Authorization': 'Basic YWRtaW46YWRtaW4=',
         'Origin': f'http://{ip}',
@@ -46,5 +46,6 @@ def set_printer_ip_dynamic():
 
     
 
-set_lan_dhcp(typ="dynamic")
-    
+# set_lan_dhcp(typ="dynamic")
+
+set_printer_ip_dynamic()
