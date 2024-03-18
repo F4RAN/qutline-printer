@@ -51,6 +51,7 @@ def change_dhcp(mac):
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
+            print("Static for wifi")
         elif printer['is_static_ip']:
             res = set_printer_ip_dynamic(printer['ip_addr'])
             if not res:
@@ -58,6 +59,7 @@ def change_dhcp(mac):
             cursor.execute(f"UPDATE Printer SET is_static_ip = 0 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
+            print("Dynamic for wifi")
     # LAN
     if printer['connection'] == 0:
         if not printer['is_static_ip']:
@@ -67,6 +69,7 @@ def change_dhcp(mac):
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
+            print("Static for lan")
         elif printer['is_static_ip']:
             res = set_lan_dhcp(printer['ip_addr'],typ='dynamic')
             if not res:
@@ -74,6 +77,7 @@ def change_dhcp(mac):
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
+            print("Dynamic for lan")
         
     
     return "Printer DHCP changed successfully."
