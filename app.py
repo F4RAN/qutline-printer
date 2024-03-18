@@ -61,14 +61,14 @@ def change_dhcp(mac):
     # LAN
     if printer['connection'] == 0:
         if not printer['is_static_ip']:
-            res = set_lan_dhcp(printer['ip_addr'],type='static')
+            res = set_lan_dhcp(printer['ip_addr'],typ='static')
             if not res:
                     return app.response_class("Problem occured", 400)
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
         elif printer['is_static_ip']:
-            res = set_lan_dhcp(printer['ip_addr'],type='dynamic')
+            res = set_lan_dhcp(printer['ip_addr'],typ='dynamic')
             if not res:
                     return app.response_class("Problem occured", 400)
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
