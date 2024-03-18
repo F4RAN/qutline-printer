@@ -173,8 +173,10 @@ def set_printer_ip_static(ip):
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
                              timeout=tout)
         print("Successfully set to static")
+        return True
     except Exception as e:
         print(e)
+    return False
 
 def set_printer_ip_dynamic(ip):
     headers = {
