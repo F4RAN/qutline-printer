@@ -464,18 +464,17 @@ def setup():
 
 @app.route('/hard_reset/<mac>', methods=['POST'])
 def hard_reset(mac):
-    try:
         conn = sqlite3.connect(DATABASE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         print(mac)
         printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
         pritner = printers[0]
+        
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
         hard_reset_printer(printer['ip_addr'], mac)
         return jsonify({'message': 'Printer reset successfully'})
-    except Exception as e:
         print(e)
         return jsonify({'message': 'Printer reset failed'})
 
