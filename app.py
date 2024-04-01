@@ -470,6 +470,7 @@ def hard_reset(mac):
         cursor = conn.cursor()
         print(mac)
         printers = get_printers(cursor, ['mac_addr','ip_addr'], [f"mac_addr = '{mac}'"])
+        print(printers)
         pritner = printers[0]
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
