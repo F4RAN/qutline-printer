@@ -473,7 +473,7 @@ def hard_reset(mac):
         pritner = printers[0]
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
-        hard_reset_printer(printer['ip'], mac)
+        hard_reset_printer(printer['ip_addr'], mac)
         return jsonify({'message': 'Printer reset successfully'})
     except Exception as e:
         print(e)
