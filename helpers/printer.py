@@ -278,6 +278,7 @@ def set_lan_dhcp(ip,typ):
 def hard_reset_printer(ip, mac):
     # Command : 1f 1b 1f 27 13 14 52 00
     # reset printer
+    print("here in hard reset")
     ip = ip
     p = Network(ip, port=9100)
     # Open connection
