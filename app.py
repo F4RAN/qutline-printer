@@ -468,7 +468,9 @@ def hard_reset(mac):
         conn = sqlite3.connect(DATABASE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        printer = cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'").fetchone()
+        print(mac)
+        printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+        pritner = printers[0]
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
         hard_reset_printer(printer['ip'], mac)
