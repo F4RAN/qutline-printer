@@ -1,4 +1,5 @@
 import os
+import random
 import subprocess
 import uuid
 from time import sleep
@@ -164,7 +165,6 @@ def check_status():
     for printer in printers:
         cursor.execute(f"SELECT type FROM Job WHERE printer_id = {printer['id']}")
         jobs = [t[j['type']] for j in cursor.fetchall()]
-
         res.append({'name': printer['name'], 'mac': printer['mac_addr'],
                     'ip': printer['ip_addr'], 'is_static_ip': printer['is_static_ip'],
                     'access': printer['access_level'], 'type': 'wifi' if printer['connection'] == 1 else 'lan',

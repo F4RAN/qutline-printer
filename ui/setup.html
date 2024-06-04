@@ -236,10 +236,12 @@
         approve: false,
         showPassword: false,
         err:"",
+        printerName:""
       };
     },
     mounted() {
       this.getWifiName();
+      this.printerName = window.location.search.split('=')[3]
     },
     methods: {
       getWifiName(){
@@ -264,12 +266,14 @@
           .then(data => {
             this.loading = false;
             if(this.ssid == data.ssid){
+              let callback = window.location.search.split('=')[2]
               let store = window.location.search.split('=')[1]
-              window.location.href = `https://qdev-store.vitalize.dev/store/${store}/settings?active=devices`
+              window.location.href = `${callback}/store/${store}/settings?active=devices`
             }
             if(this.approve){
+              let callback = window.location.search.split('=')[2]
               let store = window.location.search.split('=')[1]
-              window.location.href = `https://qdev-store.vitalize.dev/store/${store}/settings?active=devices`
+              window.location.href = `${callback}/store/${store}/settings?active=devices`
             }
             if(!this.approve && data.ssid != this.ssid){
               this.approve = true
