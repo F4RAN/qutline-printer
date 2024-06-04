@@ -330,7 +330,6 @@ def scan_printer():
     data = scan(rng, setup, cursor)
     conn.commit()
     conn.close()
-    print(get_printers)
     return jsonify(data)
 
 def verify_printer(prt):
