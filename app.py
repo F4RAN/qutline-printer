@@ -22,7 +22,9 @@ DATABASE = "dbs/database.sqlite"
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
-    "origins": ["https://qdev-store.vitalize.dev", "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
+    "origins": ["https://qdev-store.vitalize.dev", "https://uats.qutline.com",
+                "https://store.qutline.com", "https://owner.qutline.com",
+                "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
 
 
