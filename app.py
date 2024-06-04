@@ -429,7 +429,7 @@ def check_update():
     with open('VERSION', 'r') as f:
         in_version = f.read()
     res = requests.get('https://raw.githubusercontent.com/F4RAN/qutline-printer/main/VERSION')
-    out_version = res.text
+    out_version = res.text.strip()
     if in_version == out_version:
         return jsonify({'update': False})
     else:
