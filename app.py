@@ -427,7 +427,7 @@ def print_receipt(prt):
 def check_update():
     # Read VERSION file
     with open('VERSION', 'r') as f:
-        in_version = f.read()
+        in_version = f.read().strip()
     res = requests.get('https://raw.githubusercontent.com/F4RAN/qutline-printer/main/VERSION')
     out_version = res.text.strip()
     if in_version == out_version:
