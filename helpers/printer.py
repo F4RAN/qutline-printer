@@ -147,32 +147,33 @@ def connect_to_wifi(ip, mac, wifi, name):
     }
     ssid = wifi["ssid"]
     password = wifi["password"]
-    payload = f'ap_setting_ssid={slugify(name)}&sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=STATIC'
+    payload = f'sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=STATIC'
     try:
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
                              timeout=tout)
         sleep(10)
-        try:
-            headers = {
-                'Authorization': 'Basic YWRtaW46YWRtaW4=',
-                'Origin': f'http://{ip}',
-                'Referer': f'http://{ip}/wirepoint_en.html',
-            }
-            payload=f'ap_setting_ssid={slugify}'
-            res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
-            res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                             timeout=tout)
-        except Exception as e:
-            print("inside error", e)
-            name = "Unknown Printer"
-        return name
+       
     except Exception as e:
         print(e)
         print("HTTP request to printer to set wifi credentials failed.")
         pass
         name = "Unknown Printer"
         return  name
+     try:
+            headers = {
+                'Authorization': 'Basic YWRtaW46YWRtaW4=',
+                'Origin': f'http://{ip}',
+                'Referer': f'http://{ip}/wirepoint_en.html',
+            }
+            payload=f'ap_setting_ssid=Arian+Parsa'
+            res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
+            res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
+                             timeout=tout)
+        except Exception as e:
+            print("inside error", e)
+            name = "Unknown Printer"
+    return name
 
 def set_printer_ip_static(ip):
     headers = {
