@@ -151,15 +151,14 @@ def connect_to_wifi(ip, mac, wifi, name):
     try:
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                             timeout=tout)
-        sleep(10)
-       
+                             timeout=tout)       
     except Exception as e:
         print(e)
         print("HTTP request to printer to set wifi credentials failed.")
         pass
         name = "Unknown Printer"
         return  name
+    sleep(20)
     try:
         headers = {
             'Authorization': 'Basic YWRtaW46YWRtaW4=',
@@ -170,6 +169,8 @@ def connect_to_wifi(ip, mac, wifi, name):
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
                          timeout=tout)
+        print("Name changed", payload)
+        
     except Exception as e:
         print("inside error", e)
         name = "Unknown Printer"
