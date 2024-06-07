@@ -160,19 +160,19 @@ def connect_to_wifi(ip, mac, wifi, name):
         pass
         name = "Unknown Printer"
         return  name
-     try:
-            headers = {
-                'Authorization': 'Basic YWRtaW46YWRtaW4=',
-                'Origin': f'http://{ip}',
-                'Referer': f'http://{ip}/wirepoint_en.html',
-            }
-            payload=f'ap_setting_ssid=Arian+Parsa'
-            res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
-            res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                             timeout=tout)
-        except Exception as e:
-            print("inside error", e)
-            name = "Unknown Printer"
+    try:
+        headers = {
+            'Authorization': 'Basic YWRtaW46YWRtaW4=',
+            'Origin': f'http://{ip}',
+            'Referer': f'http://{ip}/wirepoint_en.html',
+        }
+        payload=f'ap_setting_ssid=Arian+Parsa'
+        res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
+        res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
+                         timeout=tout)
+    except Exception as e:
+        print("inside error", e)
+        name = "Unknown Printer"
     return name
 
 def set_printer_ip_static(ip):
