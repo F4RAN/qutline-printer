@@ -208,6 +208,7 @@
             <p>Printer connected successfully!</p>
             <div style="padding:10px;background:#9dfecd;color:black;border-radius:10px">
             <small>Now you must connect back to the {{ ssid }} if It's not connected automatically.</small>
+            <small>Your new printer name is: {{newPrinterName}}</small>
 
             </div>
         </div>
@@ -236,7 +237,8 @@
         approve: false,
         showPassword: false,
         err:"",
-        printerName:""
+        printerName:"",
+        newPrinterName:""
       };
     },
     mounted() {
@@ -309,6 +311,7 @@
             if (data.status == 200) {
               this.loading = false; // Hide loading overlay
               toast.success(`Printer Connected to ${this.ssid} Successfully.`)
+              this.newPrinterName = res.data
               this.nextStep(); // Go to next step
             }
             else {
