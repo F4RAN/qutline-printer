@@ -307,7 +307,7 @@ def connect_wifi(mac):
     printers = get_printers(cursor, ['mac_addr','id','name'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
-    printer = cursor.execute(f"SELECT ip_addr FROM Printer WHERE mac_addr = '{mac}'").fetchone()
+    printer = cursor.execute(f"SELECT ip_addr, name FROM Printer WHERE mac_addr = '{mac}'").fetchone()
     ip = printer['ip_addr']
     name = printer['name']
     credential = cursor.execute("SELECT * FROM WifiCredential").fetchone()
