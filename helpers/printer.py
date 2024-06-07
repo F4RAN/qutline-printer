@@ -155,9 +155,7 @@ def connect_to_wifi(ip, mac, wifi, name):
     except Exception as e:
         print(e)
         print("HTTP request to printer to set wifi credentials failed.")
-        pass
         name = "Unknown Printer"
-        return  name
     sleep(20)
     try:
         headers = {
