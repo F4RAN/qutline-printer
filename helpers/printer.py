@@ -146,6 +146,12 @@ def is_online(ip, port):
 #     except:
 #         return False
 
+
+def save_changes(ip, headers):
+    res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
+                         timeout=tout)
+
+
 def rename_wifi(ip, name):
     sleep(5)
     print("starting rename")
@@ -155,16 +161,14 @@ def rename_wifi(ip, name):
         'Referer': f'http://{ip}/wirepoint_en.html',
     }
     try:
-        payload = f'ap_setting_ssid=Arian%2BParsa'
+        payload = f'ap_setting_ssid={name}'
         print("Name changed", payload)
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
     except Exception as e:
         print("inside error", e)
         name = "Unknown Printer"
-    res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                         timeout=tout)
+    save_changes(ip, headers)
     print("starting after rename")
-
 
 
 def connect_to_wifi(ip, mac, wifi, name):
@@ -184,6 +188,7 @@ def connect_to_wifi(ip, mac, wifi, name):
         print("HTTP request to printer to set wifi credentials failed.")
         name = "Unknown Printer"
     threading.Thread(target=rename_wifi, args=(ip, name,)).start()
+    # Save changes and restart after rename wifi
 
 
 def set_printer_ip_static(ip):
