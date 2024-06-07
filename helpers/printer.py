@@ -159,6 +159,8 @@ def connect_to_wifi(ip, mac, wifi, name):
                 'Origin': f'http://{ip}',
                 'Referer': f'http://{ip}/wirepoint_en.html',
             }
+        except:
+            name = "Unknown Printer"
 
     except Exception as e:
         print(e)
