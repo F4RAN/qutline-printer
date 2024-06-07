@@ -309,9 +309,10 @@
           .then(res => res)
           .then(data => {
             if (data.status == 200) {
+              console.log(data)
               this.loading = false; // Hide loading overlay
               toast.success(`Printer Connected to ${this.ssid} Successfully.`)
-              this.newPrinterName = data
+              this.newPrinterName = data.data
               this.nextStep(); // Go to next step
             }
             else {
