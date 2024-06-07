@@ -304,13 +304,15 @@ def connect_wifi(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr','id','name'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
-    ip = cursor.execute(f"SELECT ip_addr FROM Printer WHERE mac_addr = '{mac}'").fetchone()['ip_addr']
+    printer = cursor.execute(f"SELECT ip_addr FROM Printer WHERE mac_addr = '{mac}'").fetchone()
+    ip = printer['ip_addr']
+    name = printer['name']
     credential = cursor.execute("SELECT * FROM WifiCredential").fetchone()
     wifi = {'ssid': credential['ssid'], 'password': credential['password']}
-    name = connect_to_wifi(ip, mac, wifi, printer['name'])
+    name = connect_to_wifi(ip, mac, wifi, name)
     conn.close()
     return app.response_class(name, 200)
 
