@@ -237,13 +237,11 @@
         approve: false,
         showPassword: false,
         err:"",
-        printerName:"",
         newPrinterName:""
       };
     },
     mounted() {
       this.getWifiName();
-      this.printerName = window.location.search.split('=')[3]
     },
     methods: {
       getWifiName(){
