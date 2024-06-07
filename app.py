@@ -314,7 +314,7 @@ def connect_wifi(mac):
     wifi = {'ssid': credential['ssid'], 'password': credential['password']}
     name = connect_to_wifi(ip, mac, wifi, name)
     conn.close()
-    return app.response_class(name, 200)
+    return app.response_class("Connected successfully.", 200)
 
 
 @app.route("/scan", methods=["POST"])

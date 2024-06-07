@@ -1,3 +1,4 @@
+import threading
 from time import sleep
 from escpos.printer import Network
 import subprocess
@@ -6,12 +7,16 @@ import requests
 import socket
 from tinydb import TinyDB, Query, where
 from slugify import slugify
+
 tout = 20
 
+
 def get_printers(cursor, select=[], where=[]):
-    cursor.execute(f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
+    cursor.execute(
+        f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
     printers = [dict(row) for row in cursor.fetchall()]
     return printers
+
 
 def scan(rng, setup, cursor):
     founded_ips = []
@@ -51,8 +56,9 @@ def scan(rng, setup, cursor):
             if len(check) != 0:
                 cursor.execute(f"UPDATE Printer SET ip_addr = '{ip}' WHERE mac_addr = '{mac}'")
             else:
-                cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 1, '{mac}', '{ip}', 0, 1)")
-            
+                cursor.execute(
+                    f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 1, '{mac}', '{ip}', 0, 1)")
+
         except:
             print("Printer doesn't have Wifi Connection")
             socket.setdefaulttimeout(5)
@@ -89,15 +95,17 @@ def scan(rng, setup, cursor):
                     if len(check) != 0:
                         cursor.execute(f"UPDATE Printer SET ip_addr = '{ip}', connection = 0 WHERE mac_addr = '{mac}'")
                     else:
-                        cursor.execute(f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 0, '{mac}', '{ip}', 0, 0)")
-                    
-                    conflict_printers = get_printers(cursor, select=['mac_addr', 'ip_addr', 'name'], where=[f"ip_addr = '{ip}'"])
+                        cursor.execute(
+                            f"INSERT INTO Printer (name, connection, mac_addr, ip_addr, access_level, is_static_ip) VALUES ('{name}', 0, '{mac}', '{ip}', 0, 0)")
+
+                    conflict_printers = get_printers(cursor, select=['mac_addr', 'ip_addr', 'name'],
+                                                     where=[f"ip_addr = '{ip}'"])
 
                     for p in conflict_printers:
                         if p['mac_addr'] != mac and p['ip_addr'] == ip:
                             # set None instead of ip
                             cursor.execute(f"UPDATE Printer SET ip_addr = 'None' WHERE mac_addr = '{p['mac_addr']}'")
-                            
+
 
             except:
                 print("Socket not found")
@@ -138,6 +146,27 @@ def is_online(ip, port):
 #     except:
 #         return False
 
+def rename_wifi(ip, name):
+    print("starting before rename")
+    sleep(180)
+    print("starting rename")
+    try:
+        headers = {
+            'Authorization': 'Basic YWRtaW46YWRtaW4=',
+            'Origin': f'http://{ip}',
+            'Referer': f'http://{ip}/wirepoint_en.html',
+        }
+        payload = f'ap_setting_ssid=Arian+Parsa'
+        print("Name changed", payload)
+        res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
+        res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
+                             timeout=tout)
+    except Exception as e:
+        print("inside error", e)
+        name = "Unknown Printer"
+    print("starting after rename")
+
+
 def connect_to_wifi(ip, mac, wifi, name):
     headers = {
         'Authorization': 'Basic YWRtaW46YWRtaW4=',
@@ -151,27 +180,13 @@ def connect_to_wifi(ip, mac, wifi, name):
     try:
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                             timeout=tout)       
+                             timeout=tout)
     except Exception as e:
         print(e)
         print("HTTP request to printer to set wifi credentials failed.")
         name = "Unknown Printer"
-    sleep(100)
-    try:
-        headers = {
-            'Authorization': 'Basic YWRtaW46YWRtaW4=',
-            'Origin': f'http://{ip}',
-            'Referer': f'http://{ip}/wirepoint_en.html',
-        }
-        payload=f'ap_setting_ssid=Arian+Parsa'
-        print("Name changed", payload)
-        res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
-        res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
-                         timeout=tout)
-    except Exception as e:
-        print("inside error", e)
-        name = "Unknown Printer"
-    return name
+    threading.Thread(target=rename_wifi, args=(ip, name,)).start()
+
 
 def set_printer_ip_static(ip):
     headers = {
@@ -193,6 +208,7 @@ def set_printer_ip_static(ip):
     except Exception as e:
         print(e)
     return False
+
 
 def set_printer_ip_dynamic(ip):
     headers = {
@@ -216,7 +232,8 @@ def set_printer_ip_dynamic(ip):
         return False
     return False
 
-def set_lan_dhcp(ip,typ):
+
+def set_lan_dhcp(ip, typ):
     socket.setdefaulttimeout(5)
     response = socket.socket()
     response.connect((ip, 80))
@@ -261,10 +278,10 @@ def set_lan_dhcp(ip,typ):
     # Construct the query string
     if typ == 'static':
         query = f"dhcp_mode=0&IP_1={ip1}&IP_2={ip2}&IP_3={ip3}&IP_4={ip4}&MASK_1={mask1}&MASK_2={mask2}&MASK_3={mask3}&MASK_4={mask4}&GW_IP_1={gw1}&GW_IP_2={gw2}&GW_IP_3={gw3}&GW_IP_4={gw4}&__use_dhcp=0&save=+Save+"
-        
-    elif typ =='dynamic':
+
+    elif typ == 'dynamic':
         query = f"dhcp_mode=1&DHCP_time={dhcp_time}&__use_dhcp=0&save=+Save+"
-    
+
     socket.setdefaulttimeout(5)
     response = socket.socket()
     response.connect((ip, 80))
@@ -281,7 +298,7 @@ def set_lan_dhcp(ip,typ):
             html += data
     except:
         pass
-    
+
     try:
         response.shutdown(socket.SHUT_RD)
         response.close()
@@ -289,7 +306,7 @@ def set_lan_dhcp(ip,typ):
         return False
         print("Problem with closing socket")
     return True
-    
+
 
 def hard_reset_printer(ip, mac):
     # Command : 1f 1b 1f 27 13 14 52 00
