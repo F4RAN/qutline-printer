@@ -155,7 +155,7 @@ def rename_wifi(ip, name):
         'Referer': f'http://{ip}/wirepoint_en.html',
     }
     try:
-        payload = f'ap_setting_ssid=Arian+Parsa'
+        payload = f'ap_setting_ssid=Arian%2BParsa'
         print("Name changed", payload)
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
     except Exception as e:
