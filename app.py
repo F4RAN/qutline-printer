@@ -310,9 +310,9 @@ def connect_wifi(mac):
     ip = cursor.execute(f"SELECT ip_addr FROM Printer WHERE mac_addr = '{mac}'").fetchone()['ip_addr']
     credential = cursor.execute("SELECT * FROM WifiCredential").fetchone()
     wifi = {'ssid': credential['ssid'], 'password': credential['password']}
-    connect_to_wifi(ip, mac, wifi)
+    name = connect_to_wifi(ip, mac, wifi, printer['name'])
     conn.close()
-    return "Device connected to Wi-Fi successfully."
+    return app.response_class(name, 200)
 
 
 @app.route("/scan", methods=["POST"])

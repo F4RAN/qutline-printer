@@ -137,7 +137,7 @@ def is_online(ip, port):
 #     except:
 #         return False
 
-def connect_to_wifi(ip, mac, wifi):
+def connect_to_wifi(ip, mac, wifi, name):
     headers = {
         'Authorization': 'Basic YWRtaW46YWRtaW4=',
         'Origin': f'http://{ip}',
@@ -146,11 +146,12 @@ def connect_to_wifi(ip, mac, wifi):
     }
     ssid = wifi["ssid"]
     password = wifi["password"]
-    payload = f'sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=STATIC'
+    payload = f'ap_setting_ssid={name}&sta_setting_encry=AES&sta_setting_auth=WPA2PSK&sta_setting_ssid={ssid}&sta_setting_auth_sel=WPA2PSK&sta_setting_encry_sel=AES&sta_setting_type_sel=ASCII&sta_setting_wpakey={password}&wan_setting_dhcp=STATIC'
     try:
         res = requests.post("http://" + ip + '/do_cmd_en.html', headers=headers, data=payload, timeout=tout)
         res2 = requests.post("http://" + ip + "/success_en.html", headers=headers, data='HF_PROCESS_CMD=RESTART',
                              timeout=tout)
+        printer_name_res = requests.get("http://" + ip + "/wirepoint_en.html", headers=headers)
 
     except Exception as e:
         print(e)
