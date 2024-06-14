@@ -18,6 +18,15 @@ def get_printers(cursor, select=[], where=[]):
     return printers
 
 
+def printer_name_generator(printers):
+    max_num = 0
+    for printer in printers:
+        if printer['name'].split("Printer #") != -1:
+            max_num = max(max_num, int(printer['name'].split("#")[1]))
+    name = f"Printer #{max_num + 1}"
+    return name
+
+
 def scan(rng, setup, cursor):
     founded_ips = []
     nmap_args = f'nmap -p 9100 --open {rng}.1-255 -M200 -oG -'
@@ -46,11 +55,7 @@ def scan(rng, setup, cursor):
             res = requests.get("http://" + ip + '/status_en.html', headers=headers, timeout=tout)
             mac = str(res.content).split('var cover_sta_mac = "')[1].split('";')[0]
             printers = get_printers(cursor)
-            max_num = 0
-            for printer in printers:
-                if printer['name'].find("Printer #"):
-                    max_num = max(max_num, int(printer['name'].split("#")[1]))
-            name = f"Printer #{max_num + 1}"
+            name = printer_name_generator(printers)
             # check mac address exists
             check = get_printers(cursor, where=[f"mac_addr = '{mac}'"])
             if len(check) != 0:
@@ -87,10 +92,7 @@ def scan(rng, setup, cursor):
                     mac = mac.replace("-", ':')
                     printers = get_printers(cursor)
                     max_num = 0
-                    for printer in printers:
-                        if printer['name'].find("Printer #"):
-                            max_num = max(max_num, int(printer['name'].split("#")[1]))
-                    name = f"Printer #{max_num + 1}"
+                    name = printer_name_generator(printers)
                     check = get_printers(cursor, where=[f"mac_addr = '{mac}'"])
                     if len(check) != 0:
                         cursor.execute(f"UPDATE Printer SET ip_addr = '{ip}', connection = 0 WHERE mac_addr = '{mac}'")
