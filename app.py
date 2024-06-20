@@ -25,6 +25,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {
     "origins": ["https://qdev-store.vitalize.dev", "https://uats.qutline.com",
                 "https://store.qutline.com", "https://owner.qutline.com",
+                "https://q-store.vitalize.dev", "https://q-owner.vitalize.dev",
                 "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
 
@@ -119,7 +120,7 @@ def set_default(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    # type: 0: Orders, 1: Receipts, 2: Tables
+    # #type: 0: Orders, 1: Receipts, 2: Tables
     # convert req['type'] to int
     t = {
         "orders": 0,
