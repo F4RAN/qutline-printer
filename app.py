@@ -6,16 +6,12 @@ from time import sleep
 import requests
 from flask import Flask, request, jsonify, app
 from flask_cors import CORS
-from configs.init import defaults
 from configs.define_printer import Printer
 from helpers.network import get_private_ip
 from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer, set_printer_ip_dynamic, set_printer_ip_static, set_lan_dhcp
-from tinydb import TinyDB, where, Query
 from helpers.lock_empty import run, lock
 from configs.init import init_db, defaults
 run()
-from threading import Thread
-# Start print handler thread
 import sqlite3
 init_db()
 
@@ -100,9 +96,9 @@ def delete_default(mac,typ):
     t = {
         "orders": 0,
         "receipts": 1,
-        "tables": 2
+        "tables": 2,
+        "customer": 3
     }
-    print(t[typ], typ, printer['id'])
     job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
     if not job:
         return app.response_class("Job with this type not found", 404)
@@ -125,11 +121,11 @@ def set_default(mac):
     t = {
         "orders": 0,
         "receipts": 1,
-        "tables": 2
+        "tables": 2,
+        "customer": 3
     }
 
     jobs = cursor.execute(f"SELECT * FROM Job").fetchall()
-    print(jobs,[job['type'] for job in jobs], req['type'], t[req['type']])
     if t[req['type']] in [job['type'] for job in jobs]:
         return app.response_class("This printer assigned for this job before", 400)
     else:
@@ -161,7 +157,8 @@ def check_status():
     t = {
         0: "orders",
         1: "receipts",
-        2: "tables"
+        2: "tables",
+        3: "customer"
     }
     for printer in printers:
         cursor.execute(f"SELECT type FROM Job WHERE printer_id = {printer['id']}")
@@ -255,7 +252,6 @@ def edit_printer(mac):
         return app.response_class("Mac address not found", 404)
     if not req['ip']:
         return app.response_class("IP is not exists", 400)
-    q = Query()
     cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'")
     printer = cursor.fetchone()
     # Update the fields
@@ -349,7 +345,8 @@ def verify_printer(prt):
     t1 = {
         0: "orders",
         1: "receipts",
-        2: "tables"
+        2: "tables",
+        3: "customer"
     }
     default_printers_types = [t1[ty['type']] for ty in types]
     
@@ -359,7 +356,8 @@ def verify_printer(prt):
         t2 = {
             "orders": 0,
             "receipts": 1,
-            "tables": 2
+            "tables": 2,
+            "customer": 3
         }
         addrs = cursor.execute(f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '{t2[prt]}')").fetchone()
         mac, ip = addrs['mac_addr'], addrs['ip_addr']
