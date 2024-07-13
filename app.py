@@ -446,7 +446,7 @@ def update_project():
     timer = 0
     cwd = os.getcwd()
     script_path = os.path.join(cwd, "setup/update.sh")
-    sb = subprocess.Popen(['/bin/bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    sb = subprocess.Popen(['/data/data/com.termux/files/usr/bin/bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while sb.poll() is None:
         print(str(sb.stdout.readline()))
         sleep(1)
