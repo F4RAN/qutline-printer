@@ -8,11 +8,14 @@ from flask import Flask, request, jsonify, app
 from flask_cors import CORS
 from configs.define_printer import Printer
 from helpers.network import get_private_ip
-from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer, set_printer_ip_dynamic, set_printer_ip_static, set_lan_dhcp
+from helpers.printer import scan, is_online, connect_to_wifi, hard_reset_printer, set_printer_ip_dynamic, \
+    set_printer_ip_static, set_lan_dhcp
 from helpers.lock_empty import run, lock
 from configs.init import init_db, defaults
+
 run()
 import sqlite3
+
 init_db()
 
 DATABASE = "dbs/database.sqlite"
@@ -25,10 +28,9 @@ CORS(app, resources={r"/*": {
                 "http://127.0.0.1:*", "http://localhost:3000", "http://localhost:*"]}})
 
 
-
-
 def get_printers(cursor, select=[], where=[]):
-    cursor.execute(f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
+    cursor.execute(
+        f"SELECT {'*' if len(select) == 0 else ', '.join(select)} FROM Printer {'WHERE ' + ' AND '.join(where) if len(where) > 0 else ''}")
     printers = [dict(row) for row in cursor.fetchall()]
     return printers
 
@@ -38,7 +40,8 @@ def change_dhcp(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr', 'ip_addr' ,'id', 'is_static_ip','connection'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr', 'ip_addr', 'id', 'is_static_ip', 'connection'],
+                            [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
     printer = printers[0]
@@ -63,32 +66,32 @@ def change_dhcp(mac):
     # LAN
     if printer['connection'] == 0:
         if not printer['is_static_ip']:
-            res = set_lan_dhcp(printer['ip_addr'],typ='static')
+            res = set_lan_dhcp(printer['ip_addr'], typ='static')
             if not res:
-                    return app.response_class("Problem occured", 400)
+                return app.response_class("Problem occured", 400)
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
             print("Static for lan")
         elif printer['is_static_ip']:
-            res = set_lan_dhcp(printer['ip_addr'],typ='dynamic')
+            res = set_lan_dhcp(printer['ip_addr'], typ='dynamic')
             if not res:
-                    return app.response_class("Problem occured", 400)
+                return app.response_class("Problem occured", 400)
             cursor.execute(f"UPDATE Printer SET is_static_ip = 1 WHERE mac_addr = '{mac}'")
             conn.commit()
             conn.close()
             print("Dynamic for lan")
-        
-    
+
     return "Printer DHCP changed successfully."
+
 
 # MIGRATED TO SQLITE
 @app.route("/delete_default/<mac>/<typ>", methods=["DELETE"])
-def delete_default(mac,typ):
+def delete_default(mac, typ):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr', 'id'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
     printer = printers[0]
@@ -102,10 +105,11 @@ def delete_default(mac,typ):
     job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
     if not job:
         return app.response_class("Job with this type not found", 404)
-    
+
     cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'")
     conn.commit()
     return "Default printer removed successfully."
+
 
 # MIGRATED TO SQLITE
 @app.route("/set_default/<mac>", methods=["POST"])
@@ -133,12 +137,13 @@ def set_default(mac):
         printer = cursor.execute(f"SELECT * FROM Printer WHERE mac_addr = '{mac}'").fetchone()
         if not printer:
             return app.response_class("Printer with this mac not found", 404)
-        cursor.execute(f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{t[req['type']]}')")
+        cursor.execute(
+            f"INSERT INTO Job (printer_id, type) VALUES ((SELECT id FROM Printer WHERE mac_addr = '{mac}'), '{t[req['type']]}')")
         conn.commit()
     conn.close()
 
-
     return "Default printer set successfully."
+
 
 # MIGRATED TO SQLITE
 @app.route("/get_defaults", methods=["GET"])
@@ -173,9 +178,10 @@ def check_status():
     if not wifi:
         wifi = {'ssid': '', 'password': ''}
     conn.close()
-    
+
     return jsonify({'types': defaults, 'wifi': {'SSID': wifi['ssid'], 'PASSWORD': wifi['password']},
                     'printers': res})
+
 
 # MIGRATED TO SQLITE
 @app.route("/set_wifi", methods=["PUT"])
@@ -192,6 +198,7 @@ def set_wifi():
     conn.close()
 
     return "Wi-fi credentials set successfully."
+
 
 # MIGRATED TO SQLITE
 @app.route("/get_wifi", methods=["GET"])
@@ -239,6 +246,7 @@ def add_printer():
         return app.response_class(f"An error occurred: {str(e)}", 500)
     return "Printer added successfully."
 
+
 # MIGRATED TO SQLITE
 @app.route("/edit_printer/<mac>", methods=["PUT"])
 def edit_printer(mac):
@@ -256,20 +264,20 @@ def edit_printer(mac):
     printer = cursor.fetchone()
     # Update the fields
     update_fields = []
-    
+
     if req.get('ip'):
         update_fields.append(f"ip_addr = '{req['ip']}'")
-    
+
     if req.get('name'):
         update_fields.append(f"name = '{req['name']}'")
-    
+
     if update_fields:
         update_query = f"UPDATE Printer SET {', '.join(update_fields)} WHERE mac_addr = '{mac}'"
         cursor.execute(update_query)
         conn.commit()
 
-
     return "Printer edited successfully."
+
 
 # MIGRATED TO SQLITE
 @app.route("/delete_printer/<mac>", methods=["DELETE"])
@@ -277,21 +285,22 @@ def delete_printer(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr','id'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr', 'id'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.", 404)
-    
+
     printer = printers[0]
-    print(printer['id'],mac,printer['mac_addr'])
+    print(printer['id'], mac, printer['mac_addr'])
     # Remove relations in Job Table
     cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']}")
     # Remove from sqlite
     cursor.execute(f"DELETE FROM Printer WHERE mac_addr = '{mac}'")
-    
+
     conn.commit()
     conn.close()
-    
+
     return "Printer and all relations removed successfully."
+
 
 # HERE
 @app.route("/connect_wifi/<mac>", methods=["POST"])
@@ -301,7 +310,7 @@ def connect_wifi(mac):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr','id','name'], [f"mac_addr = '{mac}'"])
+    printers = get_printers(cursor, ['mac_addr', 'id', 'name'], [f"mac_addr = '{mac}'"])
     if len(printers) == 0:
         return app.response_class("Printer with this mac not found.")
     printer = cursor.execute(f"SELECT ip_addr, name FROM Printer WHERE mac_addr = '{mac}'").fetchone()
@@ -331,6 +340,7 @@ def scan_printer():
     conn.close()
     return jsonify(data)
 
+
 def verify_printer(prt):
     lc = 0
     while lock.locked():
@@ -346,10 +356,11 @@ def verify_printer(prt):
         0: "orders",
         1: "receipts",
         2: "tables",
-        3: "customer"
+        3: "customer",
+        4: "duplicate_order"
     }
     default_printers_types = [t1[ty['type']] for ty in types]
-    
+
     if prt not in default_printers_types:
         return False, app.response_class("Printer part not founds", 404)
     try:
@@ -357,16 +368,19 @@ def verify_printer(prt):
             "orders": 0,
             "receipts": 1,
             "tables": 2,
-            "customer": 3
+            "customer": 3,
+            "duplicate_order": 4
         }
-        addrs = cursor.execute(f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '{t2[prt]}')").fetchone()
+        addrs = cursor.execute(
+            f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '{t2[prt]}')").fetchone()
         mac, ip = addrs['mac_addr'], addrs['ip_addr']
     except Exception as e:
-            
+
         return False, app.response_class("Printer part not found", 404)
     if not ip:
         return False, app.response_class("IP part not found", 404)
-    return {'mac':mac,'ip':ip}, False
+    return {'mac': mac, 'ip': ip}, False
+
 
 @app.route("/print_code/<prt>", methods=["POST"])
 def print_code(prt):
@@ -378,7 +392,7 @@ def print_code(prt):
     mac = info['mac']
     try:
         printer = Printer(mac)
-        res = printer.print(image_path="",ip=ip,tp="code",code=req['code'],name=req['name'])
+        res = printer.print(image_path="", ip=ip, tp="code", code=req['code'], name=req['name'])
         if res:
             return {'success': True}
         else:
@@ -387,6 +401,7 @@ def print_code(prt):
     except Exception as e:
         print(e)
         return {'success': False}
+
 
 @app.route("/print/<prt>", methods=["POST"])
 def print_receipt(prt):
@@ -414,6 +429,16 @@ def print_receipt(prt):
     try:
         printer = Printer(mac)
         res = printer.print(image_path, ip)
+        if prt == 'duplicate_order':
+            second_info, second_err = verify_printer('orders')
+            if not second_info:
+                print(second_err)
+                return "Second printer error"
+            second_ip = second_info['ip']
+            second_mac = second_info['mac']
+            second_printer = Printer(second_mac)
+            second_printer.print(image_path, second_ip)
+
         if res:
             return {'success': True}
         else:
@@ -446,7 +471,8 @@ def update_project():
     timer = 0
     cwd = os.getcwd()
     script_path = os.path.join(cwd, "setup/update.sh")
-    sb = subprocess.Popen(['/data/data/com.termux/files/usr/bin/bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    sb = subprocess.Popen(['/data/data/com.termux/files/usr/bin/bash', script_path], stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
     while sb.poll() is None:
         print(str(sb.stdout.readline()))
         sleep(1)
@@ -471,7 +497,7 @@ def hard_reset(mac):
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         print(mac)
-        printers = get_printers(cursor, ['mac_addr','ip_addr'], [f"mac_addr = '{mac}'"])
+        printers = get_printers(cursor, ['mac_addr', 'ip_addr'], [f"mac_addr = '{mac}'"])
         printer = printers[0]
         if not printer:
             return app.response_class("Printer with this mac not found", 404)

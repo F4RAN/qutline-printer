@@ -1,9 +1,9 @@
 import sqlite3
 import os
-defaults = ["orders", "receipts", "tables", "customer"]
+defaults = ["orders", "receipts", "tables", "customer", "duplicate_order"]
 """
 connection: 0: LAN, 1: Wi-Fi
-type: 0: Orders, 1: Receipts, 2: Tables, 3: Customer
+type: 0: Orders, 1: Receipts, 2: Tables, 3: Customer 4: Duplicate_Order
 access_level: 0: Admin, 1: User
 """
 def init_db():
