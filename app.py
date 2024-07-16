@@ -126,7 +126,8 @@ def set_default(mac):
         "orders": 0,
         "receipts": 1,
         "tables": 2,
-        "customer": 3
+        "customer": 3,
+        "duplicate_order": 4
     }
 
     jobs = cursor.execute(f"SELECT * FROM Job").fetchall()
