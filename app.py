@@ -164,7 +164,8 @@ def check_status():
         0: "orders",
         1: "receipts",
         2: "tables",
-        3: "customer"
+        3: "customer",
+        4: "duplicate_order"
     }
     for printer in printers:
         cursor.execute(f"SELECT type FROM Job WHERE printer_id = {printer['id']}")
@@ -374,13 +375,20 @@ def verify_printer(prt):
         }
         addrs = cursor.execute(
             f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '{t2[prt]}')").fetchone()
+        dup_mac, dup_ip = '', ''
+        if prt == 'orders':
+            dup_addrs = cursor.execute(
+                f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '4')").fetchone()
+            dup_mac = dup_addrs['mac_addr']
+            dup_ip = dup_addrs['ip_addr']
         mac, ip = addrs['mac_addr'], addrs['ip_addr']
+
     except Exception as e:
 
         return False, app.response_class("Printer part not found", 404)
     if not ip:
         return False, app.response_class("IP part not found", 404)
-    return {'mac': mac, 'ip': ip}, False
+    return {'mac': mac, 'ip': ip, 'dup_mac': dup_mac, 'dup_ip': dup_ip}, False
 
 
 @app.route("/print_code/<prt>", methods=["POST"])
@@ -411,6 +419,9 @@ def print_receipt(prt):
         return err
     ip = info['ip']
     mac = info['mac']
+    dup = False  # Duplicate order
+    if 'dup_mac' in info.keys() and 'dup_ip' in info.keys():
+        dup = True
 
     if 'imageFile' not in request.files:
         return app.response_class("No image file selected", 400)
@@ -430,15 +441,9 @@ def print_receipt(prt):
     try:
         printer = Printer(mac)
         res = printer.print(image_path, ip)
-        if prt == 'duplicate_order':
-            second_info, second_err = verify_printer('orders')
-            if not second_info:
-                print(second_err)
-                return "Second printer error"
-            second_ip = second_info['ip']
-            second_mac = second_info['mac']
-            second_printer = Printer(second_mac)
-            second_printer.print(image_path, second_ip)
+        if dup:  # If duplicate print assigned
+            dup_printer = Printer(info['dup_mac'])
+            dup_printer.print(image_path, info['dup_ip'])
 
         if res:
             return {'success': True}
