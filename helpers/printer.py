@@ -135,6 +135,8 @@ def is_online(ip, port):
         return False
     except socket.error as err:
         return False
+    except:
+        return False
 
 
 # def is_online(ip):
