@@ -353,7 +353,7 @@ def verify_printer(prt):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    types = cursor.execute("SELECT type FROM Job").fetchall()
+    types = cursor.execute("SELECT type FROM Job").fetchall() # 0 1 2 3
     t1 = {
         0: "orders",
         1: "receipts",
@@ -362,7 +362,7 @@ def verify_printer(prt):
         4: "duplicate_order"
     }
     default_printers_types = [t1[ty['type']] for ty in types]
-
+    print(default_printers_types, prt)
     if prt not in default_printers_types:
         return False, app.response_class("Printer part not founds", 404)
     try:
