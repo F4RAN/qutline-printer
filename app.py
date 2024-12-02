@@ -101,7 +101,8 @@ def delete_default(mac, typ):
             "orders": 0,
             "receipts": 1,
             "tables": 2,
-            "customer": 3
+            "customer": 3,
+            "duplicate_order": 4
         }
         job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
         if not job:
