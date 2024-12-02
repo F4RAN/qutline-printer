@@ -88,27 +88,31 @@ def change_dhcp(mac):
 # MIGRATED TO SQLITE
 @app.route("/delete_default/<mac>/<typ>", methods=["DELETE"])
 def delete_default(mac, typ):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    printers = get_printers(cursor, ['mac_addr', 'id'], [f"mac_addr = '{mac}'"])
-    if len(printers) == 0:
-        return app.response_class("Printer with this mac not found.")
-    printer = printers[0]
-    # check job exists
-    t = {
-        "orders": 0,
-        "receipts": 1,
-        "tables": 2,
-        "customer": 3
-    }
-    job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
-    if not job:
-        return app.response_class("Job with this type not found", 404)
+    try:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        printers = get_printers(cursor, ['mac_addr', 'id'], [f"mac_addr = '{mac}'"])
+        if len(printers) == 0:
+            return app.response_class("Printer with this mac not found.")
+        printer = printers[0]
+        # check job exists
+        t = {
+            "orders": 0,
+            "receipts": 1,
+            "tables": 2,
+            "customer": 3
+        }
+        job = cursor.execute(f"SELECT * FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'").fetchone()
+        if not job:
+            return app.response_class("Job with this type not found", 404)
 
-    cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'")
-    conn.commit()
-    return "Default printer removed successfully."
+        cursor.execute(f"DELETE FROM Job WHERE printer_id = {printer['id']} AND type = '{t[typ]}'")
+        conn.commit()
+        return "Default printer removed successfully."
+    except Exception as e:
+        print(e)
+        return app.response_class(str(e), 500)
 
 
 # MIGRATED TO SQLITE
