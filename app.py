@@ -362,8 +362,8 @@ def verify_printer(prt):
         4: "duplicate_order"
     }
     default_printers_types = [t1[ty['type']] for ty in types]
-    print(default_printers_types, prt)
-    if prt not in default_printers_types:
+    print(default_printers_types, prt, prt in default_printers_types)
+    if str(prt) not in default_printers_types:
         return False, app.response_class("Printer part not founds", 404)
     try:
         t2 = {
