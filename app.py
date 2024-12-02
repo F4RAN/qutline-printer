@@ -378,8 +378,9 @@ def verify_printer(prt):
         if prt == 'orders':
             dup_addrs = cursor.execute(
                 f"SELECT mac_addr, ip_addr FROM Printer WHERE id = (SELECT printer_id FROM Job WHERE type = '4')").fetchone()
-            dup_mac = dup_addrs['mac_addr']
-            dup_ip = dup_addrs['ip_addr']
+            if dup_addrs:
+                dup_mac = dup_addrs['mac_addr']
+                dup_ip = dup_addrs['ip_addr']
         mac, ip = addrs['mac_addr'], addrs['ip_addr']
 
     except Exception as e:
